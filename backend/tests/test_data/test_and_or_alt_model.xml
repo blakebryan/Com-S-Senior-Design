@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<featureModel chosenLayoutAlgorithm="1">
+    <struct>
+        <and abstract="true" mandatory="true" name="Flight_Safety_Check">
+            <and abstract="true" mandatory="true" name="Flight_Parameters">
+                <feature mandatory="true" name="INT_Max_Altitude_Feet"/>
+                <feature mandatory="true" name="FLOAT_Wind_Speed_MPH"/>
+                <feature mandatory="false" name="INT_Flight_Duration_Minutes"/>
+            </and>
+            <or abstract="true" mandatory="true" name="Battery">
+                <feature mandatory="true" name="INT_Max_Hover_Time"/>
+                <feature mandatory="true" name="FLOAT_Current_Battery_Charge"/>
+                <alt mandatory="true" name="TUPLE_Current_Battery_Health">
+                    <feature mandatory="true" name="Low_Battery_Health"/>
+                    <feature mandatory="true" name="Med_Battery_Health"/>
+                    <feature mandatory="true" name="Good_Battery_Health"/>
+                </alt>
+                <feature mandatory="true" name="INT_Min_Operating_Temp"/>
+                <feature mandatory="true" name="INT_Max_Operating_Temp"/>
+            </or>
+            <alt abstract="true" name="Sensors">
+                <feature mandatory="true" name="BOOL_Obstacle_Avoidance_Sys"/>
+                <feature mandatory="true" name="BOOL_Aircraft_Avoidance_Sys"/>
+            </alt>
+        </and>
+    </struct>
+    <constraints/>
+    <calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+    <comments/>
+    <featureOrder userDefined="false"/>
+</featureModel>

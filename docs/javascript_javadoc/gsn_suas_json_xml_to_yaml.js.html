@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: gsn_suas/json_xml_to_yaml.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: gsn_suas/json_xml_to_yaml.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file json_xml_to_yaml.js
+ * Converts JSON safety case data to a YAML format, processes risk levels, and applies pruning logic.
+ * @author Brady Bargren. ISU ID: az2997
+ */
+
+const fs = require('fs');
+const yaml = require('js-yaml');
+const path = require('path');
+
+const timestamp = process.argv[2];
+
+// Resolve paths dynamically for portability
+const baseDir = path.resolve(__dirname, '..');
+const safetyCaseDataPath = path.join(baseDir, 'backend', 'exports', 'safetyCaseData.json');
+
+// Ensure the images directory exists
+const imagesDir = path.join(__dirname, 'images');
+if (!fs.existsSync(imagesDir)) {
+    fs.mkdirSync(imagesDir);
+}
+
+/**
+ * Applies failure status from JSON data to YAML content.
+ * Marks nodes as either 'low-risk' or 'high-risk' based on the `failed` attribute in the JSON.
+ *
+ * @param {Object} yamlContent - The YAML content to be updated.
+ * @param {Object} nodeData - The JSON node data containing `failed` attributes and child nodes.
+ */
+function applyFailureStatusFromData(yamlContent, nodeData) {
+    const nodeId = nodeData.entity.id;
+
+    if (!yamlContent[nodeId]) {
+        console.warn(`No corresponding YAML node found for JSON node ${nodeId}`);
+    } else {
+        const yamlNode = yamlContent[nodeId];
+        yamlNode.classes = yamlNode.classes || [];
+
+        // Remove existing risk classes
+        yamlNode.classes = yamlNode.classes.filter(c => !['low-risk', 'high-risk'].includes(c));
+
+        // Assign risk level based on the 'failed' attribute
+        if (nodeData.failed === true) {
+            yamlNode.classes.push('high-risk');
+        } else if (nodeData.failed === false) {
+            yamlNode.classes.push('low-risk');
+        } else {
+            console.warn(`Node ${nodeId} has an undefined 'failed' status. Defaulting to 'high-risk'.`);
+            yamlNode.classes.push('high-risk');
+        }
+    }
+
+    // Recursively apply to children
+    if (nodeData.children &amp;&amp; nodeData.children.length > 0) {
+        nodeData.children.forEach(child => applyFailureStatusFromData(yamlContent, child));
+    }
+}
+
+/**
+ * Applies descriptions from JSON data into the text fields of YAML content.
+ *
+ * @param {Object} yamlContent - The YAML content to be updated.
+ * @param {Object} nodeData - The JSON node data containing descriptions and child nodes.
+ */
+function applyDescriptionsFromData(yamlContent, nodeData) {
+    const nodeId = nodeData.entity.id;
+
+    if (!yamlContent[nodeId]) {
+        console.warn(`No corresponding YAML node found for JSON node ${nodeId} when applying description`);
+    } else {
+        const yamlNode = yamlContent[nodeId];
+        let desc = nodeData.entity.description;
+        if (desc.startsWith('"') &amp;&amp; desc.endsWith('"')) {
+            desc = desc.slice(1, -1);
+        }
+        yamlNode.text = desc;
+    }
+
+    // Recursively process children for descriptions
+    if (nodeData.children &amp;&amp; nodeData.children.length > 0) {
+        nodeData.children.forEach(child => applyDescriptionsFromData(yamlContent, child));
+    }
+}
+
+/**
+ * Propagates risk levels from child nodes to parent nodes in the YAML content.
+ * Nodes are labeled as 'high-risk' if any of their child nodes are 'high-risk'; otherwise, they are 'low-risk'.
+ *
+ * @param {Object} yamlContent - The YAML content to process.
+ */
+function propagateRiskLevels(yamlContent) {
+    const assignRiskLevel = (nodeKey) => {
+        const node = yamlContent[nodeKey];
+        if (!node) return 'low-risk'; // Default to low-risk for nodes not found in YAML
+
+        // Skip propagating for solution nodes (Sn)
+        if (nodeKey.startsWith('Sn')) {
+            if (node.classes &amp;&amp; node.classes.includes('high-risk')) return 'high-risk';
+            return 'low-risk';
+        }
+
+        let childRiskLevels = [];
+        if (node.supportedBy) {
+            node.supportedBy.forEach(childKey => {
+                const childLevel = assignRiskLevel(childKey);
+                childRiskLevels.push(childLevel);
+            });
+        }
+
+        // Default to low-risk for this node
+        let nodeRisk = 'low-risk';
+
+        // If any child has 'high-risk', this node becomes 'high-risk'
+        if (childRiskLevels.includes('high-risk')) {
+            nodeRisk = 'high-risk';
+        }
+
+        // Clean current classes and assign the final risk level
+        node.classes = node.classes || [];
+        node.classes = node.classes.filter(c => !['low-risk', 'high-risk'].includes(c));
+        node.classes.push(nodeRisk);
+
+        return nodeRisk;
+    };
+
+    // Begin propagation from the root node (assumed to be G1)
+    if (yamlContent['G1']) {
+        assignRiskLevel('G1');
+    } else {
+        console.error('G1 node not found in YAML content.');
+    }
+}
+
+/**
+ * Removes unused solution nodes (Sn) from the YAML content that are not referenced by any other nodes.
+ *
+ * @param {Object} yamlContent - The YAML content to prune.
+ */
+function removeUnusedSnNodes(yamlContent) {
+    const allSnKeys = Object.keys(yamlContent).filter(key => key.startsWith('Sn'));
+    const referencedKeys = new Set();
+
+    Object.values(yamlContent).forEach(node => {
+        if (node.supportedBy) {
+            node.supportedBy.forEach(ref => {
+                if (ref.startsWith('Sn')) {
+                    referencedKeys.add(ref);
+                }
+            });
+        }
+    });
+
+    allSnKeys.forEach(snKey => {
+        if (!referencedKeys.has(snKey)) {
+            delete yamlContent[snKey];
+        }
+    });
+}
+
+/**
+ * Writes the updated YAML content to a specified file.
+ *
+ * @param {Object} updatedYaml - The YAML content to write.
+ * @param {string} outputPath - The path to the output file.
+ */
+function writeUpdatedYaml(updatedYaml, outputPath) {
+    try {
+        const yamlString = yaml.dump(updatedYaml, { noRefs: true });
+        fs.writeFileSync(outputPath, yamlString, 'utf8');
+        console.log(`YAML file successfully updated at ${outputPath}`);
+    } catch (err) {
+        console.error(`Error writing YAML file to ${outputPath}:`, err.message);
+        throw err;
+    }
+}
+
+// Main execution
+(async () => {
+    try {
+        const loadSafetyCaseData = () => {
+            try {
+                const data = fs.readFileSync(safetyCaseDataPath, 'utf8');
+                if (!data) {
+                    throw new Error('Safety case data is empty or undefined');
+                }
+                return JSON.parse(data);
+            } catch (err) {
+                console.error(`Error reading JSON from ${safetyCaseDataPath}:`, err);
+                return null;
+            }
+        };
+
+
+        const loadYamlTemplate = (templatePath) => {
+            try {
+                const fileContent = fs.readFileSync(templatePath, 'utf8');
+                return yaml.load(fileContent);
+            } catch (err) {
+                console.error('Error reading YAML template:', err);
+                throw err;
+            }
+        };
+
+        const safetyCaseTemplatePath = path.join(__dirname, 'templates', 'safety_case_template.gsn.yaml');
+        const outputSafetyCaseYamlPath = path.join(__dirname, 'images', `safety_case_${timestamp}.gsn.yaml`);
+
+        const safetyCaseYamlTemplate = loadYamlTemplate(safetyCaseTemplatePath);
+        const safetyCaseData = loadSafetyCaseData();
+
+        if (safetyCaseData) {
+            applyFailureStatusFromData(safetyCaseYamlTemplate, safetyCaseData);
+            applyDescriptionsFromData(safetyCaseYamlTemplate, safetyCaseData);
+        }
+
+        propagateRiskLevels(safetyCaseYamlTemplate);
+        removeUnusedSnNodes(safetyCaseYamlTemplate);
+
+        writeUpdatedYaml(safetyCaseYamlTemplate, outputSafetyCaseYamlPath);
+    } catch (err) {
+        console.error('Error:', err);
+    }
+})();
+
+module.exports = {
+    applyFailureStatusFromData,
+    applyDescriptionsFromData,
+    propagateRiskLevels,
+    removeUnusedSnNodes,
+    writeUpdatedYaml,
+};
+
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Response.html">Response</a></li><li><a href="module-Submission.html">Submission</a></li></ul><h3>Classes</h3><ul><li><a href="ArgData.html">ArgData</a></li><li><a href="ArgumentNode.html">ArgumentNode</a></li><li><a href="ArgumentTree.html">ArgumentTree</a></li><li><a href="Context.html">Context</a></li><li><a href="Goal.html">Goal</a></li><li><a href="InContextOf.html">InContextOf</a></li><li><a href="IsSupportedBy.html">IsSupportedBy</a></li><li><a href="QuestionNode.html">QuestionNode</a></li><li><a href="QuestionTree.html">QuestionTree</a></li><li><a href="Solution.html">Solution</a></li><li><a href="Strategy.html">Strategy</a></li></ul><h3>Global</h3><ul><li><a href="global.html#adjustLeafNodeStatus">adjustLeafNodeStatus</a></li><li><a href="global.html#applyClassesToSvg">applyClassesToSvg</a></li><li><a href="global.html#applyDescriptionsFromData">applyDescriptionsFromData</a></li><li><a href="global.html#applyFailureStatusFromData">applyFailureStatusFromData</a></li><li><a href="global.html#argTreeJSONToYaml">argTreeJSONToYaml</a></li><li><a href="global.html#argumentContent">argumentContent</a></li><li><a href="global.html#assignHorizontalIndexes">assignHorizontalIndexes</a></li><li><a href="global.html#collectNodesBFS">collectNodesBFS</a></li><li><a href="global.html#connectDB">connectDB</a></li><li><a href="global.html#cosineSimilarity">cosineSimilarity</a></li><li><a href="global.html#deleteThreshold">deleteThreshold</a></li><li><a href="global.html#ensureDirectoryExists">ensureDirectoryExists</a></li><li><a href="global.html#expandWords">expandWords</a></li><li><a href="global.html#extractVariableNames">extractVariableNames</a></li><li><a href="global.html#fileToString">fileToString</a></li><li><a href="global.html#generateArgTreeDiagram">generateArgTreeDiagram</a></li><li><a href="global.html#generateQuestions">generateQuestions</a></li><li><a href="global.html#getFileContent">getFileContent</a></li><li><a href="global.html#getLeafNodes">getLeafNodes</a></li><li><a href="global.html#getPrunedSafetyCaseMarked">getPrunedSafetyCaseMarked</a></li><li><a href="global.html#getResponses">getResponses</a></li><li><a href="global.html#getSafetyCaseMarked">getSafetyCaseMarked</a></li><li><a href="global.html#getTermFrequencyVector">getTermFrequencyVector</a></li><li><a href="global.html#getThresholds">getThresholds</a></li><li><a href="global.html#getThresholdsFor">getThresholdsFor</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#inputYamlPath">inputYamlPath</a></li><li><a href="global.html#loadResponsesFromDB">loadResponsesFromDB</a></li><li><a href="global.html#loadYamlTemplate">loadYamlTemplate</a></li><li><a href="global.html#mapResponsesToLeafNodes">mapResponsesToLeafNodes</a></li><li><a href="global.html#matchToken">matchToken</a></li><li><a href="global.html#maxDensity">maxDensity</a></li><li><a href="global.html#maxWeight">maxWeight</a></li><li><a href="global.html#maxWind">maxWind</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#nodesToDelete">nodesToDelete</a></li><li><a href="global.html#parseAndBuildArgumentTree">parseAndBuildArgumentTree</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseContext">parseContext</a></li><li><a href="global.html#parseGoal">parseGoal</a></li><li><a href="global.html#parseInContextOf">parseInContextOf</a></li><li><a href="global.html#parseIsSupportedBy">parseIsSupportedBy</a></li><li><a href="global.html#parseQuestionTree">parseQuestionTree</a></li><li><a href="global.html#parseSolution">parseSolution</a></li><li><a href="global.html#parseStrategy">parseStrategy</a></li><li><a href="global.html#parseToTree">parseToTree</a></li><li><a href="global.html#parseXMLToJS">parseXMLToJS</a></li><li><a href="global.html#preprocessString">preprocessString</a></li><li><a href="global.html#processFileContent">processFileContent</a></li><li><a href="global.html#processNode">processNode</a></li><li><a href="global.html#propagateRiskLevels">propagateRiskLevels</a></li><li><a href="global.html#prunedFlag">prunedFlag</a></li><li><a href="global.html#reachableNodes">reachableNodes</a></li><li><a href="global.html#removeUnsupportedSn">removeUnsupportedSn</a></li><li><a href="global.html#removeUnusedSnNodes">removeUnusedSnNodes</a></li><li><a href="global.html#reportWebVitals">reportWebVitals</a></li><li><a href="global.html#responseSchema">responseSchema</a></li><li><a href="global.html#router">router</a></li><li><a href="global.html#sanitizeText">sanitizeText</a></li><li><a href="global.html#savePrunedTree">savePrunedTree</a></li><li><a href="global.html#saveResponses">saveResponses</a></li><li><a href="global.html#saveSafetyCaseMarked">saveSafetyCaseMarked</a></li><li><a href="global.html#saveTreeAsSVG">saveTreeAsSVG</a></li><li><a href="global.html#setThresholdsFor">setThresholdsFor</a></li><li><a href="global.html#stemWord">stemWord</a></li><li><a href="global.html#stringToFile">stringToFile</a></li><li><a href="global.html#submissionSchema">submissionSchema</a></li><li><a href="global.html#svgFiles">svgFiles</a></li><li><a href="global.html#synonyms">synonyms</a></li><li><a href="global.html#thresholdSchema">thresholdSchema</a></li><li><a href="global.html#thresholdsModel">thresholdsModel</a></li><li><a href="global.html#timestamp">timestamp</a></li><li><a href="global.html#tokenizeFileContent">tokenizeFileContent</a></li><li><a href="global.html#transformTree">transformTree</a></li><li><a href="global.html#traverseAndBuildTree">traverseAndBuildTree</a></li><li><a href="global.html#updateYamlFileWithMongoData">updateYamlFileWithMongoData</a></li><li><a href="global.html#updateYamlWithResponses">updateYamlWithResponses</a></li><li><a href="global.html#writeUpdatedYaml">writeUpdatedYaml</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Dec 17 2024 13:37:43 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

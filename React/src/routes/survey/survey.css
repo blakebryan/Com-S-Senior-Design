@@ -1,0 +1,37 @@
+.surveyPage, .container{
+    height: 100%;
+    background-color: white; /* Set default background to white */
+}
+
+.subheader{
+    padding: 10px 10px 10px 10px;
+}
+
+.col:not(.subheader, .question, .submitRow){
+    background-color: lightgray; /* Change background color to light gray */
+    color: black; /* Set text color to black */
+    font-weight: bold;
+    padding: 5px 5px 5px 10px;
+}
+
+/* Styles for the Generated Safety Case section */
+.safety-case-section {
+    background-color: white; /* Ensure the section has a white background */
+    color: black; /* Set text color to black */
+    padding: 10px;
+    text-align: center; /* Center-align the text */
+}
+
+.safety-case-section h3 {
+    color: black; /* Ensure the heading is black */
+}
+
+.safety-case-img {
+    width: 100%; /* Ensure the SVG image takes full width */
+    height: auto; /* Maintain aspect ratio */
+    background-color: transparent; /* Remove any background color from the image */
+}
+
+button:disabled{
+    background-color: lightcoral !important;
+}

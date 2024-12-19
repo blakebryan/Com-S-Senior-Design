@@ -1,0 +1,295 @@
+Argument 1.3 Parameterized_SC_Argument
+
+description "A copy of the safety case with no nodes having two incoming edges."
+
+Goal G1 {
+	description "Complete a safe flight in controlled airspace"
+}
+Strategy S1 {
+	description "Argue that all the hazards of the flight are sufficiently mitigated"
+}
+Goal G2 {
+	description "The risk of mid-air collision is sufficiently mitigated"
+}
+Goal G3 {
+	description "The risk of ground collision is sufficiently mitigated"
+}
+Strategy S2 {
+	description "Argue that causes of MAC are mitigated"
+}
+Strategy S3 {
+	description "Argue that the causes of ground collision are mitigated"
+}
+Goal G4 {
+	description "The chance of loss of control of the UAS is low"
+}
+Goal G6 {
+	description "The UAS (or crewmember) can avoid other aircraft in the operating region."
+}
+Goal G5 {
+	description "The UAS (or crewmember) is able detect other aircraft in the operating region."
+}
+Strategy S4 {
+	description "Argue that the causes of loss of UAS control are mitigated"
+}
+Goal G7 {
+	description "The sustained wind in the OR will be less than the maximum allowed by the airframe."
+}
+Solution E1 {
+	description "[Sustained_Winds] < [Max_Wind_Speed]"
+}
+Goal G8 {
+	description "Precipitation in the OR will be less than the maximum allowed by the UAS"
+}
+Goal G9 {
+	description "Visibility in the OR will be greater than the allowed minimum"
+}
+Goal toBeDeveloped G10 {
+	description "Temperatures in the OR will be within the allowed range (Same as G22)"
+}
+Strategy S5 {
+	description "Argue the ability to detect other aircraft is not hindered"
+}
+Goal G11 {
+	description "The chances of a loss of battery event are low"
+}
+Goal toBeDeveloped G12 {
+	description "The chance of loss of control of the UAS is low (Same as G4)"
+}
+Goal G14 {
+	description "UAS has a detect-and-avoid system "
+}
+Solution E2 {
+	description "[Current_Battery_Charge] * [Max_Hover_Time] < [Mission_Estimated_Length]\n"
+}
+Context C1 {
+	description "In the context of all the information from the product line."
+}
+Solution E3 {
+	description "[Rain_Rate] < [Max_Precipitation_Rate] AND [Snow_Sleet_Rate] < [Max_Precipitation_Rate]"
+}
+Solution E5 {
+	description "[Visbility_dist] > [Cylinder_Radius]"
+}
+Solution E7 {
+	description "[Obstacle_Avoidance_Sys] "
+}
+Goal G16 {
+	description "If airspace is congested, a spotter is needed."
+}
+Solution E8 {
+	description "If [Air_Traffic_in_OR] == \"High_Air_Traffic\" then [Spotter_Present] == True"
+}
+Strategy S6 {
+	description "Argue the pilot (or crewmember) has sufficient skill to pilot the UAS"
+}
+Goal G15 {
+	description "Show the pilot is certified to fly"
+}
+Solution E9 {
+	description "[Pilot_Certified]\n"
+}
+Goal G13 {
+	description "The winds in the OR will be within the allowed limits."
+}
+Strategy S7 {
+	description "Argue over all the types of winds in the OR"
+}
+Goal G17 {
+	description "Wind gusts in the OR will be less than the maximum allowed by the airframe."
+}
+Goal G18 {
+	description "Wind shear will not be present in the OR"
+}
+Solution E6 {
+	description "[Wind_Gusts] < [Max_Wind_Speed]"
+}
+Solution E10 {
+	description "[Wind_Shear] == False"
+}
+Goal G19 {
+	description "The density altitude at launch wil be less than the maximum allowed by the UAS"
+}
+Solution E11 {
+	description "[Density_Alt_at_Takeoff] < [Max_Altitude]"
+}
+Strategy S8 {
+	description "Argue over the causes of loss of battery events"
+}
+Goal G20 {
+	description "The battery will have sufficent reserves for the flight"
+}
+Goal G21 {
+	description "The battery health will not be poor"
+}
+Goal G22 {
+	description "The air temperature in the OR will be within the allowed limits for the battery."
+}
+Solution E12 {
+	description "[Current_Battery_Health] != \"Low_Battery_Health\""
+}
+Solution E13 {
+	description "[Min_Operating_Temp] < [Air_Temp_at_Takeoff] < [Max_Operating_Temp]"
+}
+Goal G23 {
+	description "UAS has an obstacle avoidance system"
+}
+Solution E4 {
+	description "[Detect_and_Avoid_Sys]"
+}
+Strategy S9 {
+	description "Argue both Visibility and Ceiling are greater than the allowed minimum"
+}
+Goal G24 {
+	description "Visibility is greater than the radius of the flight from takeoff."
+}
+Goal G26 {
+	description "Ceiling will be greater than the maximum altitude to be flown."
+}
+Solution E14 {
+	description "[Ceiling_Dist] > [Max_Mission_Altitude]"
+}
+IsSupportedBy ISB1 {
+	to S1 from G1
+}
+IsSupportedBy ISB2 {
+	to G3 from S1
+}
+IsSupportedBy ISB3 {
+	to G2 from S1
+}
+IsSupportedBy ISB4 {
+	to S3 from G3
+}
+IsSupportedBy ISB5 {
+	to S2 from G2
+}
+IsSupportedBy ISB6 {
+	to G4 from S2
+}
+IsSupportedBy ISB7 {
+	to G5 from S2
+}
+IsSupportedBy ISB8 {
+	to G6 from S2
+}
+IsSupportedBy ISB9 {
+	to S4 from G4
+}
+IsSupportedBy ISB11 {
+	to E1 from G7
+}
+IsSupportedBy ISB12 {
+	to G8 from S4
+}
+IsSupportedBy ISB14 {
+	to G10 from S4
+}
+IsSupportedBy ISB15 {
+	to S5 from G5
+}
+IsSupportedBy ISB16 {
+	to G9 from S5
+}
+IsSupportedBy ISB17 {
+	to G11 from S3
+}
+IsSupportedBy ISB19 {
+	to G14 from S5
+}
+IsSupportedBy ISB21 {
+	to G12 from S3
+}
+IsSupportedBy ISB22 {
+	to E3 from G8
+}
+IsSupportedBy ISB28 {
+	to G16 from S5
+}
+IsSupportedBy ISB29 {
+	to E8 from G16
+}
+InContextOf ICO1 {
+	to C1 from G1
+}
+IsSupportedBy ISB27 {
+	to S6 from G6
+}
+IsSupportedBy ISB30 {
+	to G15 from S6
+}
+IsSupportedBy ISB31 {
+	to E9 from G15
+}
+IsSupportedBy ISB10 {
+	to G13 from S4
+}
+IsSupportedBy ISB18 {
+	to S7 from G13
+}
+IsSupportedBy ISB25 {
+	to G7 from S7
+}
+IsSupportedBy ISB33 {
+	to G17 from S7
+}
+IsSupportedBy ISB34 {
+	to G18 from S7
+}
+IsSupportedBy ISB35 {
+	to E6 from G17
+}
+IsSupportedBy ISB36 {
+	to E10 from G18
+}
+IsSupportedBy ISB37 {
+	to E11 from G19
+}
+IsSupportedBy ISB38 {
+	to G19 from S4
+}
+IsSupportedBy ISB20 {
+	to S8 from G11
+}
+IsSupportedBy ISB39 {
+	to G20 from S8
+}
+IsSupportedBy ISB40 {
+	to G21 from S8
+}
+IsSupportedBy ISB41 {
+	to G22 from S8
+}
+IsSupportedBy ISB42 {
+	to E2 from G20
+}
+IsSupportedBy ISB43 {
+	to E12 from G21
+}
+IsSupportedBy ISB44 {
+	to E13 from G22
+}
+IsSupportedBy ISB23 {
+	to E7 from G23
+}
+IsSupportedBy ISB26 {
+	to E4 from G14
+}
+IsSupportedBy ISB24 {
+	to S9 from G9
+}
+IsSupportedBy ISB45 {
+	to G24 from S9
+}
+IsSupportedBy ISB46 {
+	to E5 from G24
+}
+IsSupportedBy ISB47 {
+	to G26 from S9
+}
+IsSupportedBy ISB48 {
+	to E14 from G26
+}
+IsSupportedBy ISB49 {
+	to G23 from S5
+}

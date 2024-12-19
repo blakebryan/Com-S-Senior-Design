@@ -1,0 +1,32 @@
+Pilot:
+    -Certification (part 107 cert., adv. drone pilot qual., drone operator license, etc.)
+    -Simulation hours
+    -Flight hours
+    -Experience in adverse weather (see weather section)
+    -Maybe take some questions from FRAT
+Drone:
+    -Minimum handleable temperature
+    -Maixmum handleable temperature
+    -Range
+    -Endurance/battery left
+    -Payload cap
+    -Camera (TBD - react to visiblity answer)
+    -Water resistance
+    -Wind resistance
+    -Registered? (U.S./foreign)
+    -Remote ID?
+Mission:
+    -Distance
+    -Altitude
+    -Payload?
+    -Payload weight
+    -Condition of airspace (urban, crowded, controlled, restricted, etc.)
+    -Flying over/around people?
+    -Commercial?
+    -General objective (surveillance, recreation, delivery, etc.)
+Weather:
+    -Visibility (high/medium/low)
+    -Rain (none/little/pouring)
+    -Wind (none/little/strong)
+    -Temperature (very low/moderate/very high)
+    -Maybe take some questions from FRAT

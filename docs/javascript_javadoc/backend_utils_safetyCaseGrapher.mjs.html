@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/utils/safetyCaseGrapher.mjs</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/utils/safetyCaseGrapher.mjs</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>import fs from 'fs';
+import * as d3 from 'd3';
+import { D3Node } from 'd3-node'; // Import as a named module
+
+// Specify the output path for the generated SVG
+const outputPath = './exports/tree.svg';
+const frontEndOutputPath = '../React/Public/tree.svg';
+
+// Legend data for the SVG
+const legendData = [
+    { label: "Failed", color: "red" },
+    { label: "Passed", color: "green" }
+];
+
+/**
+ * Transforms a tree node for compatibility with D3 hierarchical data structure.
+ * @param {Object} node - The tree node to transform.
+ * @param {Object} node.entity - The entity data for the node.
+ * @param {string} node.entity.id - The unique identifier of the node.
+ * @param {boolean} node.failed - Indicates whether the node has failed.
+ * @param {Array&lt;Object>} [node.children] - The children of the node.
+ * @returns {Object} - The transformed node with `id`, `failed`, and `children` properties.
+ */
+function transformTree(node) {
+    const id = node.entity.id;
+    const failed = node.failed;
+    const children = node.children ? node.children.map(transformTree) : [];
+    return { id, failed, children };
+}
+
+/**
+ * Saves a tree structure as an SVG visualization.
+ * - Creates an SVG representation of a tree using D3.js.
+ * - Includes a legend to indicate the status (failed or passed) of nodes.
+ * @param {Object} tree - The tree data to be visualized.
+ * @param {Object} tree.rootNode - The root node of the tree.
+ */
+function saveTreeAsSVG(tree) {
+    // Transform the tree for D3 compatibility
+    const transformedTree = transformTree(tree.rootNode);
+    const width = 1600;  // Width of the SVG canvas
+    const height = 1200; // Height of the SVG canvas
+
+    // Initialize D3 with D3Node
+    const d3n = new D3Node();
+    const svg = d3n.createSVG(width, height);
+
+    // Set up a tree layout and map the transformed data to the layout
+    const root = d3.hierarchy(transformedTree);
+    const treeLayout = d3.tree().size([width - 100, height - 100]);
+    treeLayout(root);
+
+    // Draw links (edges) between nodes
+    svg.selectAll("line")
+        .data(root.links())
+        .enter()
+        .append("line")
+        .attr("x1", d => d.source.x + 50)
+        .attr("y1", d => d.source.y + 50)
+        .attr("x2", d => d.target.x + 50)
+        .attr("y2", d => d.target.y + 50)
+        .attr("stroke", "#ccc");
+
+    // Draw nodes (circles) at each point
+    svg.selectAll("circle")
+        .data(root.descendants())
+        .enter()
+        .append("circle")
+        .attr("cx", d => d.x + 50)
+        .attr("cy", d => d.y + 50)
+        .attr("r", 10)
+        .attr("fill", d => d.data.failed ? "red" : "green"); // Color nodes based on status
+
+    // Add labels for each node
+    svg.selectAll("text")
+        .data(root.descendants())
+        .enter()
+        .append("text")
+        .attr("x", d => d.x + 50)
+        .attr("y", d => d.y + 40)
+        .attr("text-anchor", "middle")
+        .text(d => d.data.id); // Display the node's `id`
+
+    // Draw legend (circles for status)
+    svg.selectAll("legendDots")
+        .data(legendData)
+        .enter()
+        .append("circle")
+        .attr("cx", 50) // X position for circles
+        .attr("cy", (d, i) => 50 + i * 25) // Y position with spacing for legend items
+        .attr("r", 10)
+        .style("fill", d => d.color);
+
+    // Add labels to the legend
+    svg.selectAll("legendLabels")
+        .data(legendData)
+        .enter()
+        .append("text")
+        .attr("x", 70) // X position for text
+        .attr("y", (d, i) => 55 + i * 25) // Y position aligned with circles
+        .text(d => d.label)
+        .attr("text-anchor", "left")
+        .style("alignment-baseline", "middle")
+        .style("font-size", "14px");
+
+    // Save the SVG to file
+    fs.writeFileSync(outputPath, d3n.svgString());
+    console.log(`SVG saved to ${outputPath}`);
+    fs.writeFileSync(frontEndOutputPath, d3n.svgString());
+    console.log(`SVG saved to ${frontEndOutputPath}`);
+}
+
+export { saveTreeAsSVG };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Response.html">Response</a></li><li><a href="module-Submission.html">Submission</a></li></ul><h3>Classes</h3><ul><li><a href="ArgData.html">ArgData</a></li><li><a href="ArgumentNode.html">ArgumentNode</a></li><li><a href="ArgumentTree.html">ArgumentTree</a></li><li><a href="Context.html">Context</a></li><li><a href="Goal.html">Goal</a></li><li><a href="InContextOf.html">InContextOf</a></li><li><a href="IsSupportedBy.html">IsSupportedBy</a></li><li><a href="QuestionNode.html">QuestionNode</a></li><li><a href="QuestionTree.html">QuestionTree</a></li><li><a href="Solution.html">Solution</a></li><li><a href="Strategy.html">Strategy</a></li></ul><h3>Global</h3><ul><li><a href="global.html#adjustLeafNodeStatus">adjustLeafNodeStatus</a></li><li><a href="global.html#applyClassesToSvg">applyClassesToSvg</a></li><li><a href="global.html#applyDescriptionsFromData">applyDescriptionsFromData</a></li><li><a href="global.html#applyFailureStatusFromData">applyFailureStatusFromData</a></li><li><a href="global.html#argTreeJSONToYaml">argTreeJSONToYaml</a></li><li><a href="global.html#argumentContent">argumentContent</a></li><li><a href="global.html#assignHorizontalIndexes">assignHorizontalIndexes</a></li><li><a href="global.html#collectNodesBFS">collectNodesBFS</a></li><li><a href="global.html#connectDB">connectDB</a></li><li><a href="global.html#cosineSimilarity">cosineSimilarity</a></li><li><a href="global.html#deleteThreshold">deleteThreshold</a></li><li><a href="global.html#ensureDirectoryExists">ensureDirectoryExists</a></li><li><a href="global.html#expandWords">expandWords</a></li><li><a href="global.html#extractVariableNames">extractVariableNames</a></li><li><a href="global.html#fileToString">fileToString</a></li><li><a href="global.html#generateArgTreeDiagram">generateArgTreeDiagram</a></li><li><a href="global.html#generateQuestions">generateQuestions</a></li><li><a href="global.html#getFileContent">getFileContent</a></li><li><a href="global.html#getLeafNodes">getLeafNodes</a></li><li><a href="global.html#getPrunedSafetyCaseMarked">getPrunedSafetyCaseMarked</a></li><li><a href="global.html#getResponses">getResponses</a></li><li><a href="global.html#getSafetyCaseMarked">getSafetyCaseMarked</a></li><li><a href="global.html#getTermFrequencyVector">getTermFrequencyVector</a></li><li><a href="global.html#getThresholds">getThresholds</a></li><li><a href="global.html#getThresholdsFor">getThresholdsFor</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#inputYamlPath">inputYamlPath</a></li><li><a href="global.html#loadResponsesFromDB">loadResponsesFromDB</a></li><li><a href="global.html#loadYamlTemplate">loadYamlTemplate</a></li><li><a href="global.html#mapResponsesToLeafNodes">mapResponsesToLeafNodes</a></li><li><a href="global.html#matchToken">matchToken</a></li><li><a href="global.html#maxDensity">maxDensity</a></li><li><a href="global.html#maxWeight">maxWeight</a></li><li><a href="global.html#maxWind">maxWind</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#nodesToDelete">nodesToDelete</a></li><li><a href="global.html#parseAndBuildArgumentTree">parseAndBuildArgumentTree</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseContext">parseContext</a></li><li><a href="global.html#parseGoal">parseGoal</a></li><li><a href="global.html#parseInContextOf">parseInContextOf</a></li><li><a href="global.html#parseIsSupportedBy">parseIsSupportedBy</a></li><li><a href="global.html#parseQuestionTree">parseQuestionTree</a></li><li><a href="global.html#parseSolution">parseSolution</a></li><li><a href="global.html#parseStrategy">parseStrategy</a></li><li><a href="global.html#parseToTree">parseToTree</a></li><li><a href="global.html#parseXMLToJS">parseXMLToJS</a></li><li><a href="global.html#preprocessString">preprocessString</a></li><li><a href="global.html#processFileContent">processFileContent</a></li><li><a href="global.html#processNode">processNode</a></li><li><a href="global.html#propagateRiskLevels">propagateRiskLevels</a></li><li><a href="global.html#prunedFlag">prunedFlag</a></li><li><a href="global.html#reachableNodes">reachableNodes</a></li><li><a href="global.html#removeUnsupportedSn">removeUnsupportedSn</a></li><li><a href="global.html#removeUnusedSnNodes">removeUnusedSnNodes</a></li><li><a href="global.html#reportWebVitals">reportWebVitals</a></li><li><a href="global.html#responseSchema">responseSchema</a></li><li><a href="global.html#router">router</a></li><li><a href="global.html#sanitizeText">sanitizeText</a></li><li><a href="global.html#savePrunedTree">savePrunedTree</a></li><li><a href="global.html#saveResponses">saveResponses</a></li><li><a href="global.html#saveSafetyCaseMarked">saveSafetyCaseMarked</a></li><li><a href="global.html#saveTreeAsSVG">saveTreeAsSVG</a></li><li><a href="global.html#setThresholdsFor">setThresholdsFor</a></li><li><a href="global.html#stemWord">stemWord</a></li><li><a href="global.html#stringToFile">stringToFile</a></li><li><a href="global.html#submissionSchema">submissionSchema</a></li><li><a href="global.html#svgFiles">svgFiles</a></li><li><a href="global.html#synonyms">synonyms</a></li><li><a href="global.html#thresholdSchema">thresholdSchema</a></li><li><a href="global.html#thresholdsModel">thresholdsModel</a></li><li><a href="global.html#timestamp">timestamp</a></li><li><a href="global.html#tokenizeFileContent">tokenizeFileContent</a></li><li><a href="global.html#transformTree">transformTree</a></li><li><a href="global.html#traverseAndBuildTree">traverseAndBuildTree</a></li><li><a href="global.html#updateYamlFileWithMongoData">updateYamlFileWithMongoData</a></li><li><a href="global.html#updateYamlWithResponses">updateYamlWithResponses</a></li><li><a href="global.html#writeUpdatedYaml">writeUpdatedYaml</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Dec 17 2024 13:37:43 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

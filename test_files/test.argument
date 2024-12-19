@@ -1,0 +1,47 @@
+Argument 1.x test argument file
+
+Goal G1 {
+    description "Complete a safe test flight"
+}
+Strategy S1 {
+    description "Argue that the main hazards of the test flight are mitigated"
+}
+Goal G2 {
+    description "The risk of mid-air collision is mitigated"
+}
+Goal G3 {
+    description "The risk of ground collision is mitigated"
+}
+Solution E1 {
+    description "[wind_speed] < [max_wind_speed]"
+}
+Goal G4 {
+    description "Visibility in the OR is sufficient"
+}
+Solution E2 {
+    description "[visibility] > [min_visibility]"
+}
+IsSupportedBy ISB1 {
+    to S1 from G1
+}
+IsSupportedBy ISB2 {
+    to G2 from S1
+}
+IsSupportedBy ISB3 {
+    to G3 from S1
+}
+IsSupportedBy ISB4 {
+    to E1 from G2
+}
+IsSupportedBy ISB5 {
+    to G4 from S1
+}
+IsSupportedBy ISB6 {
+    to E2 from G4
+}
+InContextOf ICO1 {
+    to C1 from G1
+}
+Context C1 {
+    description "Testing context for parameterized argument"
+}

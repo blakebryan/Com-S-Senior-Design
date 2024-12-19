@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/models/questionTreeModel.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/models/questionTreeModel.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Represents a node in a question tree.
+ */
+class QuestionNode {
+
+    /**
+     * Creates a QuestionNode instance.
+     * @param {string} id - The unique identifier for the node.
+     * @param {number} depth - The depth of the node in the tree.
+     * @param {string} [abstract="false"] - Indicates if the node is abstract.
+     * @param {string} [mandatory="false"] - Indicates if the node is mandatory.
+     */
+    constructor(id, depth, abstract = "false", mandatory = "false") {
+        this.identifier = id;
+        this.type = null;
+        this.children = [];
+        this.depth = depth;
+        this.questionType = null;
+        this.keyword = null;
+        this.abstract = abstract;
+        this.mandatory = mandatory;
+    }
+
+    /**
+     * Adds a child node to this node.
+     * @param {QuestionNode} childNode - The child node to add.
+     */
+    addChild(childNode) {
+        childNode.parent = this;
+        this.children.push(childNode);
+    }
+
+    /**
+     * Recursively categorizes the node and its children into types (e.g., root, category, question, answer).
+     * @param {QuestionNode[]} questionSet - An array to store categorized question nodes.
+     */
+    nodeTypeCheck(questionSet) {
+        // Log for inspection
+        console.log();
+        console.log("INSPECTING: " + this.identifier);
+
+        // Identify the root
+        if (this.depth === 0) {
+            this.type = "root";
+        } else if (this.abstract === "true") {
+            // If the node is abstract, it cannot be a question, so categorize as 'category'
+            this.type = "category";
+        } else {
+            // Check if this is a question by looking at the identifier
+            // All questions have type specified in all caps at the beginning of their identifier.
+            // Example: FLOAT_Name, LIST_Name, etc.
+            // Ensure the identifier has length > 1 before checking charAt(1).
+            if (this.identifier.length > 1 &amp;&amp; this.identifier.charAt(1) === this.identifier.charAt(1).toUpperCase()) {
+                this.type = "question";
+                questionSet.push(this);
+            } else {
+                // If it doesn't meet the above conditions, treat it as an answer
+                this.type = "answer";
+            }
+        }
+
+        console.log("Categorized as: " + this.type);
+        console.log();
+
+        // For each child, recursively determine node types
+        this.children.forEach((child) => {
+            child.nodeTypeCheck(questionSet);
+        });
+    }
+
+    /**
+     * Sets the question type for this node based on its identifier or children.
+     */
+    setNodeQuestionType() {
+        // Log initial state
+        console.log(`Setting a question type for node: ${this.identifier}`);
+
+        // If no children, log error and exit
+        // if (this.children.length &lt;= 0) {
+        //     console.error("Corrupted tree structure: question node should have at least one child. Check XML structure!");
+        //     return; // Handle the error gracefully
+        // }
+
+        // Normalize for case-insensitive checks
+        const lowerId = this.identifier.toLowerCase();
+
+        // ---------------------
+        // First: Identify type from `identifier` prefixes
+        // ---------------------
+
+        // Integer type
+        if (lowerId.includes("int_")) {
+            this.questionType = "integer";
+            // replace underscores with spaces for user readability
+            this.identifier = this.identifier.substring(lowerId.indexOf("int_") + 4).replaceAll("_", " ");
+            console.log(`Type: integer`);
+            return;
+        }
+
+        // Float type
+        if (lowerId.includes("float_")) {
+            this.questionType = "float";
+            this.identifier = this.identifier.substring(lowerId.indexOf("float_") + 6).replaceAll("_", " ");
+            console.log(`Type: float`);
+            return;
+        }
+
+        // ZIP code type
+        if (lowerId.includes("string_zip")) {
+            this.questionType = "zip";
+            this.identifier = this.identifier.substring(lowerId.indexOf("string_zip") + 7).replaceAll("_", " ");
+            console.log(`Type: zip code`);
+            return;
+        }
+
+        // City name type
+        if (lowerId.includes("string_city")) {
+            this.questionType = "text";
+            this.identifier = this.identifier.substring(lowerId.indexOf("string_city") + 7).replaceAll("_", " ");
+            console.log(`Type: text(city)`);
+            return;
+        }
+
+        // Boolean type
+        if (lowerId.includes("bool_")) {
+            this.questionType = "boolean";
+            this.identifier = this.identifier.substring(lowerId.indexOf("bool_") + 5).replaceAll("_", " ");
+            console.log(`Type: boolean`);
+            return;
+        }
+
+        // Multiple choice (tuple) type
+        if (lowerId.includes("tuple_")) {
+            // Check if multiple distinct choices exist among children
+            const uniqueChoices = new Set(
+                this.children
+                    .filter(child => child.type === "answer")
+                    .map(child => child.identifier.toLowerCase())
+            );
+            this.questionType = "multiple choice";
+            this.identifier = this.identifier.substring(lowerId.indexOf("tuple_") + 6).replaceAll("_", " ");
+            console.log("Type: multiple choice question");
+            return;
+        }
+
+        // List type
+        if (lowerId.includes("list_")) {
+            this.questionType = "list";
+            this.identifier = this.identifier.substring(lowerId.indexOf("list_") + 5).replaceAll("_", " ");
+            console.log("Type: list question");
+            return;
+        }
+
+        // Calculated (calc) type
+        if (lowerId.includes("calc_")) {
+            this.questionType = "calc";
+            this.identifier = this.identifier.substring(lowerId.indexOf("calc_") + 5).replaceAll("_", " ");
+            console.log("Type: calc type question");
+            return;
+        }
+
+        // ---------------------
+        // If we haven't returned yet, fallback to logic based on children
+        // ---------------------
+
+        // If there is only one child, default to text
+        if (this.children.length === 1) {
+            this.questionType = "text";
+            // console.log("Type: text question");
+            return;
+        } else {
+            // If multiple children, check if any have 'free response' keywords
+            const textQuestionKeywords = ["greater", "less", "between", "atleast", "sufficient"];
+            for (const child of this.children) {
+                for (const kw of textQuestionKeywords) {
+                    if (child.identifier.toLowerCase().includes(kw)) {
+                        this.questionType = "text";
+                        // console.log("Type: text question");
+                        return;
+                    }
+                }
+            }
+        }
+
+        // Check for boolean (true/false, yes/no) hints in children
+        const trueFalseQuestions = ["_yes", "_no", "true", "false"];
+        for (const child of this.children) {
+            for (const tf of trueFalseQuestions) {
+                if (child.identifier.toLowerCase().includes(tf)) {
+                    this.questionType = "boolean";
+                    // console.log("Type: boolean question");
+                    return;
+                }
+            }
+        }
+
+        // Check for multiple distinct choices for multiple choice scenario
+        if (this.children.length >= 2) {
+            const uniqueChoices = new Set(this.children.map(child => child.identifier.toLowerCase()));
+            if (uniqueChoices.size > 1) {
+                this.questionType = "multiple choice";
+                // console.log("Type: multiple choice question");
+                return;
+            }
+        }
+
+        // Default to dropdown if no conditions are met
+        this.questionType = "dropdown";
+        console.log("Type: dropdown question");
+    }
+
+    /**
+     * Converts the node and its children to a JSON representation.
+     * @returns {Object} The JSON representation of the node.
+     */
+    toJSON() {
+        return {
+            identifier: this.identifier,
+            type: this.type,
+            questionType: this.questionType,
+            depth: this.depth,
+            mandatory: this.mandatory,
+            children: this.children.map(child => child.toJSON()) // Recursively call toJSON on children
+        };
+    }
+
+}
+
+/**
+ * Represents the entire question tree structure.
+ */
+class QuestionTree {
+    root;
+    questionSet;
+
+    /**
+     * Creates a QuestionTree instance.
+     * @param {QuestionNode} root - The root node of the tree.
+     */
+    constructor(root) {
+        this.root = root;
+        this.questionSet = [];
+       // console.log("Created a tree instance with the root: " + this.root.identifier + " with "+this.root.children.length + " children");
+    }
+
+    /**
+     * Categorizes the tree nodes into types (e.g., root, category, question, answer).
+     */
+    categorizeTree() {
+        this.root.nodeTypeCheck(this.questionSet);
+    }
+
+    /**
+     * Sets the question type for each node in the question set.
+     */
+    categtorizeQuestions(){
+        //console.log("question set length: " + this.questionSet.length);
+        this.questionSet.forEach( (node) => {
+            node.setNodeQuestionType();
+        })
+    }
+
+    /**
+     * Converts the entire tree to a JSON representation.
+     * @returns {Object} The JSON representation of the tree.
+     */
+    toJSON() {
+        return this.root.toJSON();
+    }
+
+    /**
+     * Prints the tree structure with indentation for each depth level.
+     */
+    print() {
+        const printNode = (node) => {
+            // Create indentation based on the node's depth
+            const indentation = ' '.repeat(node.depth * 2); // 2 spaces per depth level
+            // Build the output string
+            let output = `${indentation}Identifier: ${node.identifier}, Type: ${node.type}`;
+            // Include question type if it is not null
+            if (node.questionType) {
+                output += `, Question Type: ${node.questionType}`;
+            }
+            console.log(output);
+            // Recursively print children
+            node.children.forEach(child => printNode(child));
+        };
+        // Start printing from the root
+        printNode(this.root);
+    }
+}
+
+module.exports = {QuestionNode, QuestionTree };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Response.html">Response</a></li><li><a href="module-Submission.html">Submission</a></li></ul><h3>Classes</h3><ul><li><a href="ArgData.html">ArgData</a></li><li><a href="ArgumentNode.html">ArgumentNode</a></li><li><a href="ArgumentTree.html">ArgumentTree</a></li><li><a href="Context.html">Context</a></li><li><a href="Goal.html">Goal</a></li><li><a href="InContextOf.html">InContextOf</a></li><li><a href="IsSupportedBy.html">IsSupportedBy</a></li><li><a href="QuestionNode.html">QuestionNode</a></li><li><a href="QuestionTree.html">QuestionTree</a></li><li><a href="Solution.html">Solution</a></li><li><a href="Strategy.html">Strategy</a></li></ul><h3>Global</h3><ul><li><a href="global.html#adjustLeafNodeStatus">adjustLeafNodeStatus</a></li><li><a href="global.html#applyClassesToSvg">applyClassesToSvg</a></li><li><a href="global.html#applyDescriptionsFromData">applyDescriptionsFromData</a></li><li><a href="global.html#applyFailureStatusFromData">applyFailureStatusFromData</a></li><li><a href="global.html#argTreeJSONToYaml">argTreeJSONToYaml</a></li><li><a href="global.html#argumentContent">argumentContent</a></li><li><a href="global.html#assignHorizontalIndexes">assignHorizontalIndexes</a></li><li><a href="global.html#collectNodesBFS">collectNodesBFS</a></li><li><a href="global.html#connectDB">connectDB</a></li><li><a href="global.html#cosineSimilarity">cosineSimilarity</a></li><li><a href="global.html#deleteThreshold">deleteThreshold</a></li><li><a href="global.html#ensureDirectoryExists">ensureDirectoryExists</a></li><li><a href="global.html#expandWords">expandWords</a></li><li><a href="global.html#extractVariableNames">extractVariableNames</a></li><li><a href="global.html#fileToString">fileToString</a></li><li><a href="global.html#generateArgTreeDiagram">generateArgTreeDiagram</a></li><li><a href="global.html#generateQuestions">generateQuestions</a></li><li><a href="global.html#getFileContent">getFileContent</a></li><li><a href="global.html#getLeafNodes">getLeafNodes</a></li><li><a href="global.html#getPrunedSafetyCaseMarked">getPrunedSafetyCaseMarked</a></li><li><a href="global.html#getResponses">getResponses</a></li><li><a href="global.html#getSafetyCaseMarked">getSafetyCaseMarked</a></li><li><a href="global.html#getTermFrequencyVector">getTermFrequencyVector</a></li><li><a href="global.html#getThresholds">getThresholds</a></li><li><a href="global.html#getThresholdsFor">getThresholdsFor</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#inputYamlPath">inputYamlPath</a></li><li><a href="global.html#loadResponsesFromDB">loadResponsesFromDB</a></li><li><a href="global.html#loadYamlTemplate">loadYamlTemplate</a></li><li><a href="global.html#mapResponsesToLeafNodes">mapResponsesToLeafNodes</a></li><li><a href="global.html#matchToken">matchToken</a></li><li><a href="global.html#maxDensity">maxDensity</a></li><li><a href="global.html#maxWeight">maxWeight</a></li><li><a href="global.html#maxWind">maxWind</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#nodesToDelete">nodesToDelete</a></li><li><a href="global.html#parseAndBuildArgumentTree">parseAndBuildArgumentTree</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseContext">parseContext</a></li><li><a href="global.html#parseGoal">parseGoal</a></li><li><a href="global.html#parseInContextOf">parseInContextOf</a></li><li><a href="global.html#parseIsSupportedBy">parseIsSupportedBy</a></li><li><a href="global.html#parseQuestionTree">parseQuestionTree</a></li><li><a href="global.html#parseSolution">parseSolution</a></li><li><a href="global.html#parseStrategy">parseStrategy</a></li><li><a href="global.html#parseToTree">parseToTree</a></li><li><a href="global.html#parseXMLToJS">parseXMLToJS</a></li><li><a href="global.html#preprocessString">preprocessString</a></li><li><a href="global.html#processFileContent">processFileContent</a></li><li><a href="global.html#processNode">processNode</a></li><li><a href="global.html#propagateRiskLevels">propagateRiskLevels</a></li><li><a href="global.html#prunedFlag">prunedFlag</a></li><li><a href="global.html#reachableNodes">reachableNodes</a></li><li><a href="global.html#removeUnsupportedSn">removeUnsupportedSn</a></li><li><a href="global.html#removeUnusedSnNodes">removeUnusedSnNodes</a></li><li><a href="global.html#reportWebVitals">reportWebVitals</a></li><li><a href="global.html#responseSchema">responseSchema</a></li><li><a href="global.html#router">router</a></li><li><a href="global.html#sanitizeText">sanitizeText</a></li><li><a href="global.html#savePrunedTree">savePrunedTree</a></li><li><a href="global.html#saveResponses">saveResponses</a></li><li><a href="global.html#saveSafetyCaseMarked">saveSafetyCaseMarked</a></li><li><a href="global.html#saveTreeAsSVG">saveTreeAsSVG</a></li><li><a href="global.html#setThresholdsFor">setThresholdsFor</a></li><li><a href="global.html#stemWord">stemWord</a></li><li><a href="global.html#stringToFile">stringToFile</a></li><li><a href="global.html#submissionSchema">submissionSchema</a></li><li><a href="global.html#svgFiles">svgFiles</a></li><li><a href="global.html#synonyms">synonyms</a></li><li><a href="global.html#thresholdSchema">thresholdSchema</a></li><li><a href="global.html#thresholdsModel">thresholdsModel</a></li><li><a href="global.html#timestamp">timestamp</a></li><li><a href="global.html#tokenizeFileContent">tokenizeFileContent</a></li><li><a href="global.html#transformTree">transformTree</a></li><li><a href="global.html#traverseAndBuildTree">traverseAndBuildTree</a></li><li><a href="global.html#updateYamlFileWithMongoData">updateYamlFileWithMongoData</a></li><li><a href="global.html#updateYamlWithResponses">updateYamlWithResponses</a></li><li><a href="global.html#writeUpdatedYaml">writeUpdatedYaml</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Dec 17 2024 13:37:43 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

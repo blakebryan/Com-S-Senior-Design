@@ -1,0 +1,29 @@
+[
+  {
+    "name": "Current Battery Health",
+    "text": "Select the appropriate option for Current Battery Health",
+    "type": "multiple-choice",
+    "children": [
+      {
+        "identifier": "Low_Battery_Health"
+      },
+      {
+        "identifier": "Med_Battery_Health"
+      },
+      {
+        "identifier": "Good_Battery_Health"
+      }
+    ]
+  },
+  {
+    "name": "Obstacle Avoidance Sys",
+    "text": "Obstacle Avoidance Sys?",
+    "type": "boolean"
+  },
+  {
+    "name": "Aircraft Avoidance Sys",
+    "text": "Aircraft Avoidance Sys?",
+    "type": "boolean"
+  }
+]
+

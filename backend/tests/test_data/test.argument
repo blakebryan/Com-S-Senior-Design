@@ -1,0 +1,191 @@
+Argument 1.4 Flight_Safety_Check
+
+description "A safety check for the flight parameters to be evaluated."
+
+Goal G1 {
+    description "Ensure flight safety requirements are met"
+}
+
+Strategy S1 {
+    description "Evaluate all safety parameters"
+}
+
+Goal G2 {
+    description "Flight parameters are acceptable"
+}
+
+Goal G3 {
+    description "Battery conditions are acceptable"
+}
+
+Goal G4 {
+    description "Safety systems are operational"
+}
+
+Strategy S2 {
+    description "Check flight parameters"
+}
+
+Strategy S3 {
+    description "Verify battery status"
+}
+
+Strategy S4 {
+    description "Confirm safety systems"
+}
+
+Goal G5 {
+    description "Altitude is within limits"
+}
+
+Goal G6 {
+    description "Wind conditions are safe"
+}
+
+Goal G7 {
+    description "Duration is acceptable"
+}
+
+Goal G8 {
+    description "Battery charge is sufficient"
+}
+
+Goal G9 {
+    description "Battery health is good"
+}
+
+Goal G10 {
+    description "Temperature is within range"
+}
+
+Goal G11 {
+    description "Avoidance systems are functional"
+}
+
+Goal G12 {
+    description "Aircraft detection is working"
+}
+
+Solution E1 {
+    description "[Max_Altitude_Feet] <= 900"
+}
+
+Solution E2 {
+    description "[Wind_Speed_MPH] <= 130"
+}
+
+Solution E3 {
+    description "[Flight_Duration_Minutes] <= 15"
+}
+
+Solution E4 {
+    description "[Current_Battery_Charge] >= 50"
+}
+
+Solution E5 {
+    description "[Current_Battery_Health] == 'Good_Battery_Health'"
+}
+
+Solution E6 {
+    description "[Air_Temp_at_Takeoff] <= 100"
+}
+
+Solution E7 {
+    description "[Obstacle_Avoidance_Sys] == true"
+}
+
+Solution E8 {
+    description "[Aircraft_Avoidance_Sys] == false"
+}
+
+IsSupportedBy ISB1 {
+    to S1 from G1
+}
+
+IsSupportedBy ISB2 {
+    to G2 from S1
+}
+
+IsSupportedBy ISB3 {
+    to G3 from S1
+}
+
+IsSupportedBy ISB4 {
+    to G4 from S1
+}
+
+IsSupportedBy ISB5 {
+    to S2 from G2
+}
+
+IsSupportedBy ISB6 {
+    to S3 from G3
+}
+
+IsSupportedBy ISB7 {
+    to S4 from G4
+}
+
+IsSupportedBy ISB8 {
+    to G5 from S2
+}
+
+IsSupportedBy ISB9 {
+    to G6 from S2
+}
+
+IsSupportedBy ISB10 {
+    to G7 from S2
+}
+
+IsSupportedBy ISB11 {
+    to G8 from S3
+}
+
+IsSupportedBy ISB12 {
+    to G9 from S3
+}
+
+IsSupportedBy ISB13 {
+    to G10 from S3
+}
+
+IsSupportedBy ISB14 {
+    to G11 from S4
+}
+
+IsSupportedBy ISB15 {
+    to G12 from S4
+}
+
+IsSupportedBy ISB16 {
+    to E1 from G5
+}
+
+IsSupportedBy ISB17 {
+    to E2 from G6
+}
+
+IsSupportedBy ISB18 {
+    to E3 from G7
+}
+
+IsSupportedBy ISB19 {
+    to E4 from G8
+}
+
+IsSupportedBy ISB20 {
+    to E5 from G9
+}
+
+IsSupportedBy ISB21 {
+    to E6 from G10
+}
+
+IsSupportedBy ISB22 {
+    to E7 from G11
+}
+
+IsSupportedBy ISB23 {
+    to E8 from G12
+}

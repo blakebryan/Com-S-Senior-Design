@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/models/argumentTreeModel.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/models/argumentTreeModel.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const { Goal, Strategy, Solution, Context, IsSupportedBy, InContextOf, ArgData } = require('../utils/ArgStructs');
+const chalk = require('chalk');
+
+/**
+ * Represents a single node in the argument tree.
+ */
+class ArgumentNode {
+    /**
+     * Creates an instance of an ArgumentNode.
+     * @param {Object} entity - The entity representing the node (e.g., goal, strategy, solution).
+     */
+    constructor(entity) {
+        this.entity = entity; // The entity (goal, strategy, solution, or context) represented by this node
+        this.children = []; // The child nodes of this node
+        this.failed = false; // Indicates if this node has failed
+        this.parent = null; // The parent node of this node
+    }
+
+    /**
+     * Adds a child node to the current node.
+     * @param {ArgumentNode} childNode - The child node to add.
+     */
+    addChild(childNode) {
+        childNode.parent = this;
+        this.children.push(childNode);
+    }
+
+    /**
+     * Converts the node and its children to a JSON representation.
+     * @returns {Object} The JSON representation of the node.
+     */
+    toJSON() {
+        return {
+            entity: this.entity,
+            failed: this.failed,
+            children: this.children.map(child => child.toJSON()),
+        };
+    }
+}
+
+/**
+ * Represents the argument tree structure.
+ */
+class ArgumentTree {
+    /**
+     * Creates an instance of an ArgumentTree.
+     * @param {ArgumentNode} rootNode - The root node of the tree.
+     */
+    constructor(rootNode) {
+        this.rootNode = rootNode; // The root node of the tree
+    }
+
+    /**
+     * Builds the tree structure using argument data.
+     * @param {ArgData} argData - The argument data containing goals, strategies, solutions, contexts, and relationships.
+     */
+    buildTree(argData) {
+        const { goals, strategies, solutions, contexts, isSupportedByRelations, inContextOfRelations } = argData;
+
+        const allNodes = {};
+
+        // Create nodes for all entities
+        [...goals, ...strategies, ...solutions, ...contexts].forEach(entity => {
+            allNodes[entity.id] = new ArgumentNode(entity);
+        });
+
+        // Assign the root node
+        this.rootNode = allNodes['G1'] || (goals.length &amp;&amp; allNodes[goals[0].id]);
+
+        // Establish "is supported by" relationships
+        isSupportedByRelations.forEach(relation => {
+            const parentNode = allNodes[relation.from];
+            const childNode = allNodes[relation.to];
+            if (parentNode &amp;&amp; childNode) {
+                parentNode.addChild(childNode);
+            }
+        });
+
+        // Establish "in context of" relationships
+        inContextOfRelations.forEach(relation => {
+            const parentNode = allNodes[relation.from];
+            const childNode = allNodes[relation.to];
+            if (parentNode &amp;&amp; childNode) {
+                parentNode.addChild(childNode);
+            }
+        });
+    }
+
+    /**
+     * Marks a node and all its parent nodes as failed.
+     * @param {ArgumentNode} node - The node to mark as failed.
+     */
+    failTree(node) {
+        let currNode = node;
+        while (currNode != null) {
+            currNode.failed = true;
+            console.log(currNode);
+            currNode = currNode.parent;
+        }
+    }
+
+    /**
+     * Finds a node in the tree by its ID.
+     * @param {string} id - The ID of the node to find.
+     * @param {ArgumentNode} [node=this.rootNode] - The starting node for the search.
+     * @returns {ArgumentNode|null} The found node, or null if not found.
+     */
+    findNodeById(id, node = this.rootNode) {
+        if (node.entity.id === id) {
+            return node;
+        }
+        for (const child of node.children) {
+            const result = this.findNodeById(id, child);
+            if (result) {
+                return result;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Prints the tree structure to the console with visual formatting.
+     * @param {ArgumentNode} [node=this.rootNode] - The node to start printing from.
+     * @param {number} [level=0] - The current depth level in the tree.
+     */
+    printTree(node = this.rootNode, level = 0) {
+        const indent = '  '.repeat(level);
+        const statusLabel = node.failed
+            ? chalk.red.bold('FAILED')
+            : chalk.green.bold('PASSED');
+        const description = node.failed
+            ? chalk.red.bold(node.entity.description)
+            : chalk.green(node.entity.description);
+        console.log(`${indent}- ${chalk.blue.bold(node.entity.id)}: ${description} (${statusLabel})`);
+
+        node.children.forEach(child => this.printTree(child, level + 1));
+    }
+
+    /**
+     * Converts the entire tree to a JSON representation.
+     * @returns {Object} The JSON representation of the tree.
+     */
+    toJSON() {
+        return this.rootNode.toJSON();
+    }
+
+    /**
+     * Finds a node in the tree by its description.
+     * @param {string} description - The description of the node to find.
+     * @returns {ArgumentNode|null} The found node, or null if not found.
+     */
+    findNodeByDescription(description) {
+        function searchNode(node) {
+            if (node.entity.description === description) {
+                return node;
+            }
+            for (const child of node.children) {
+                const result = searchNode(child);
+                if (result) {
+                    return result;
+                }
+            }
+            return null;
+        }
+
+        return searchNode(this.rootNode);
+    }
+
+    /**
+     * Creates a pruned tree containing only the failed nodes.
+     * @returns {ArgumentTree} A new ArgumentTree containing only failed nodes.
+     */
+    getPrunedFailureTree() {
+        function cloneNode(originalNode) {
+            const clonedEntity = { ...originalNode.entity };
+            const newNode = new ArgumentNode(clonedEntity);
+            newNode.failed = originalNode.failed;
+            return newNode;
+        }
+
+        function pruneTree(originalNode) {
+            if (!originalNode || !originalNode.failed) return null;
+
+            const newNode = cloneNode(originalNode);
+
+            originalNode.children
+                .map(child => pruneTree(child))
+                .filter(child => child !== null)
+                .forEach(child => newNode.addChild(child));
+
+            return newNode;
+        }
+
+        const prunedRoot = pruneTree(this.rootNode);
+        return new ArgumentTree(prunedRoot);
+    }
+}
+
+module.exports = { ArgumentNode, ArgumentTree };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Response.html">Response</a></li><li><a href="module-Submission.html">Submission</a></li></ul><h3>Classes</h3><ul><li><a href="ArgData.html">ArgData</a></li><li><a href="ArgumentNode.html">ArgumentNode</a></li><li><a href="ArgumentTree.html">ArgumentTree</a></li><li><a href="Context.html">Context</a></li><li><a href="Goal.html">Goal</a></li><li><a href="InContextOf.html">InContextOf</a></li><li><a href="IsSupportedBy.html">IsSupportedBy</a></li><li><a href="QuestionNode.html">QuestionNode</a></li><li><a href="QuestionTree.html">QuestionTree</a></li><li><a href="Solution.html">Solution</a></li><li><a href="Strategy.html">Strategy</a></li></ul><h3>Global</h3><ul><li><a href="global.html#adjustLeafNodeStatus">adjustLeafNodeStatus</a></li><li><a href="global.html#applyClassesToSvg">applyClassesToSvg</a></li><li><a href="global.html#applyDescriptionsFromData">applyDescriptionsFromData</a></li><li><a href="global.html#applyFailureStatusFromData">applyFailureStatusFromData</a></li><li><a href="global.html#argTreeJSONToYaml">argTreeJSONToYaml</a></li><li><a href="global.html#argumentContent">argumentContent</a></li><li><a href="global.html#assignHorizontalIndexes">assignHorizontalIndexes</a></li><li><a href="global.html#collectNodesBFS">collectNodesBFS</a></li><li><a href="global.html#connectDB">connectDB</a></li><li><a href="global.html#cosineSimilarity">cosineSimilarity</a></li><li><a href="global.html#deleteThreshold">deleteThreshold</a></li><li><a href="global.html#ensureDirectoryExists">ensureDirectoryExists</a></li><li><a href="global.html#expandWords">expandWords</a></li><li><a href="global.html#extractVariableNames">extractVariableNames</a></li><li><a href="global.html#fileToString">fileToString</a></li><li><a href="global.html#generateArgTreeDiagram">generateArgTreeDiagram</a></li><li><a href="global.html#generateQuestions">generateQuestions</a></li><li><a href="global.html#getFileContent">getFileContent</a></li><li><a href="global.html#getLeafNodes">getLeafNodes</a></li><li><a href="global.html#getPrunedSafetyCaseMarked">getPrunedSafetyCaseMarked</a></li><li><a href="global.html#getResponses">getResponses</a></li><li><a href="global.html#getSafetyCaseMarked">getSafetyCaseMarked</a></li><li><a href="global.html#getTermFrequencyVector">getTermFrequencyVector</a></li><li><a href="global.html#getThresholds">getThresholds</a></li><li><a href="global.html#getThresholdsFor">getThresholdsFor</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#inputYamlPath">inputYamlPath</a></li><li><a href="global.html#loadResponsesFromDB">loadResponsesFromDB</a></li><li><a href="global.html#loadYamlTemplate">loadYamlTemplate</a></li><li><a href="global.html#mapResponsesToLeafNodes">mapResponsesToLeafNodes</a></li><li><a href="global.html#matchToken">matchToken</a></li><li><a href="global.html#maxDensity">maxDensity</a></li><li><a href="global.html#maxWeight">maxWeight</a></li><li><a href="global.html#maxWind">maxWind</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#nodesToDelete">nodesToDelete</a></li><li><a href="global.html#parseAndBuildArgumentTree">parseAndBuildArgumentTree</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseContext">parseContext</a></li><li><a href="global.html#parseGoal">parseGoal</a></li><li><a href="global.html#parseInContextOf">parseInContextOf</a></li><li><a href="global.html#parseIsSupportedBy">parseIsSupportedBy</a></li><li><a href="global.html#parseQuestionTree">parseQuestionTree</a></li><li><a href="global.html#parseSolution">parseSolution</a></li><li><a href="global.html#parseStrategy">parseStrategy</a></li><li><a href="global.html#parseToTree">parseToTree</a></li><li><a href="global.html#parseXMLToJS">parseXMLToJS</a></li><li><a href="global.html#preprocessString">preprocessString</a></li><li><a href="global.html#processFileContent">processFileContent</a></li><li><a href="global.html#processNode">processNode</a></li><li><a href="global.html#propagateRiskLevels">propagateRiskLevels</a></li><li><a href="global.html#prunedFlag">prunedFlag</a></li><li><a href="global.html#reachableNodes">reachableNodes</a></li><li><a href="global.html#removeUnsupportedSn">removeUnsupportedSn</a></li><li><a href="global.html#removeUnusedSnNodes">removeUnusedSnNodes</a></li><li><a href="global.html#reportWebVitals">reportWebVitals</a></li><li><a href="global.html#responseSchema">responseSchema</a></li><li><a href="global.html#router">router</a></li><li><a href="global.html#sanitizeText">sanitizeText</a></li><li><a href="global.html#savePrunedTree">savePrunedTree</a></li><li><a href="global.html#saveResponses">saveResponses</a></li><li><a href="global.html#saveSafetyCaseMarked">saveSafetyCaseMarked</a></li><li><a href="global.html#saveTreeAsSVG">saveTreeAsSVG</a></li><li><a href="global.html#setThresholdsFor">setThresholdsFor</a></li><li><a href="global.html#stemWord">stemWord</a></li><li><a href="global.html#stringToFile">stringToFile</a></li><li><a href="global.html#submissionSchema">submissionSchema</a></li><li><a href="global.html#svgFiles">svgFiles</a></li><li><a href="global.html#synonyms">synonyms</a></li><li><a href="global.html#thresholdSchema">thresholdSchema</a></li><li><a href="global.html#thresholdsModel">thresholdsModel</a></li><li><a href="global.html#timestamp">timestamp</a></li><li><a href="global.html#tokenizeFileContent">tokenizeFileContent</a></li><li><a href="global.html#transformTree">transformTree</a></li><li><a href="global.html#traverseAndBuildTree">traverseAndBuildTree</a></li><li><a href="global.html#updateYamlFileWithMongoData">updateYamlFileWithMongoData</a></li><li><a href="global.html#updateYamlWithResponses">updateYamlWithResponses</a></li><li><a href="global.html#writeUpdatedYaml">writeUpdatedYaml</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Dec 17 2024 13:37:43 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

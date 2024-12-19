@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<featureModel chosenLayoutAlgorithm="1">
+    <struct>
+        <and abstract="true" mandatory="true" name="Multiple_Selection_Test">
+            <or abstract="true" mandatory="true" name="LIST_Favorite_Foods">
+                <feature mandatory="false" name="Pizza"/>
+                <feature mandatory="false" name="Burger"/>
+                <feature mandatory="false" name="Sushi"/>
+            </or>
+            <or abstract="true" mandatory="true" name="LIST_Programming_Languages">
+                <feature mandatory="false" name="Python"/>
+                <feature mandatory="false" name="Java"/>
+                <feature mandatory="false" name="JavaScript"/>
+            </or>
+        </and>
+    </struct>
+    <constraints/>
+    <calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+    <comments/>
+    <featureOrder userDefined="false"/>
+</featureModel>

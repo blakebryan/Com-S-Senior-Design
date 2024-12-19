@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/controllers/questionController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/controllers/questionController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const { QuestionNode, QuestionTree } = require('../models/questionTreeModel');
+const parseXMLToJS = require('../utils/xmlParser');
+
+/**
+ * Recursively traverses the XML structure and builds a tree representation.
+ *
+ * @param {Object} node - The current XML node being processed.
+ * @param {QuestionNode|null} parentNode - The parent node to which the current node will be added as a child.
+ * @param {number} depth - The current depth level in the tree.
+ * @returns {QuestionNode} The newly created node corresponding to the current XML element.
+ */
+const traverseAndBuildTree = (node, parentNode, depth) => {
+    const identifier = node.$ &amp;&amp; node.$.name ? node.$.name : 'Unnamed';
+    const abstract = node.$ &amp;&amp; node.$.abstract ? node.$.abstract : 'false';
+    const mandatory = node.$ &amp;&amp; node.$.mandatory ? node.$.mandatory : 'false';
+    const offset = '   '.repeat(depth);
+    console.log(`${offset}Building node: ${identifier} at depth: ${depth}`);
+
+    const newNode = new QuestionNode(identifier, depth, abstract, mandatory);
+
+    if (parentNode != null) {
+        parentNode.addChild(newNode);
+    }
+
+    // Process child nodes based on their keywords
+    ['and', 'or', 'alt', 'feature'].forEach(keyword => {
+        if (node[keyword]) {
+            const children = Array.isArray(node[keyword]) ? node[keyword] : [node[keyword]];
+            children.forEach(child => {
+                newNode.keyword = keyword;
+                traverseAndBuildTree(child, newNode, depth + 1);
+            });
+        }
+    });
+
+    return newNode;
+};
+
+/**
+ * Converts the parsed XML structure into a tree representation.
+ *
+ * @param {Object} result - The parsed XML object.
+ * @returns {QuestionTree|null} A `QuestionTree` object if parsing is successful, or `null` if the structure is invalid.
+ */
+const parseToTree = (result) => {
+    if (result.featureModel &amp;&amp; result.featureModel.struct) {
+        const rootNode = traverseAndBuildTree(result.featureModel.struct.and, null, 0);
+        return new QuestionTree(rootNode);
+    } else {
+        console.log("Error: 'struct' section not found in the XML model.");
+        return null;
+    }
+};
+
+/**
+ * Generates questions based on the XML model and the tree structure.
+ *
+ * @async
+ * @returns {Promise&lt;QuestionTree|Array>} The generated `QuestionTree` object, or an empty array if parsing fails.
+ */
+const generateQuestions = async () => {
+    console.log("----------------------------------------------------------");
+    console.log("Parsing XML");
+    const model = await parseXMLToJS('model.xml');
+    console.log("Parsed XML");
+    console.log("----------------------------------------------------------");
+
+    console.log("----------------------------------------------------------");
+    console.log("Generating tree");
+    const tree = parseToTree(model);
+    if (!tree) {
+        return [];
+    }
+    console.log("Generated initial tree");
+    console.log("----------------------------------------------------------");
+
+    console.log("----------------------------------------------------------");
+    console.log("Categorizing tree");
+    tree.categorizeTree();
+    console.log("Finished categorizing tree");
+    console.log("----------------------------------------------------------");
+
+    console.log("----------------------------------------------------------");
+    console.log("Categorizing question set");
+    tree.categtorizeQuestions();
+    console.log("Finished categorizing question set");
+    console.log("----------------------------------------------------------");
+
+    return tree;
+};
+
+/**
+ * Parses a set of question nodes into a structured question format.
+ *
+ * @async
+ * @param {Array&lt;QuestionNode>} questionSet - The set of question nodes to be parsed.
+ * @returns {Array&lt;Object>} An array of question objects, each containing name, text, and type, with optional children for multiple-choice or dropdown types.
+ */
+const parseQuestionTree = async (questionSet) => {
+    const questions = questionSet.map(node => {
+        switch (node.questionType) {
+            case 'boolean':
+                return {
+                    name: node.identifier,
+                    text: `${node.identifier}?`,
+                    type: 'boolean'
+                };
+            case 'multiple choice':
+                const options = node.children.map(child => ({
+                    identifier: child.identifier
+                }));
+                return {
+                    name: node.identifier,
+                    text: `Select the appropriate option for ${node.identifier}`,
+                    type: 'multiple-choice',
+                    children: options
+                };
+            case 'text':
+                return {
+                    name: node.identifier,
+                    text: `Please provide details for ${node.identifier}`,
+                    type: 'text'
+                };
+            case 'dropdown':
+                const dropdownOptions = node.children.map(child => ({
+                    identifier: child.identifier
+                }));
+                return {
+                    name: node.identifier,
+                    text: `Select from dropdown for ${node.identifier}`,
+                    type: 'dropdown',
+                    children: dropdownOptions
+                };
+            default:
+                return null;
+        }
+    });
+
+    return questions.filter(question => question !== null);
+};
+
+module.exports = { generateQuestions, parseQuestionTree };
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Response.html">Response</a></li><li><a href="module-Submission.html">Submission</a></li></ul><h3>Classes</h3><ul><li><a href="ArgData.html">ArgData</a></li><li><a href="ArgumentNode.html">ArgumentNode</a></li><li><a href="ArgumentTree.html">ArgumentTree</a></li><li><a href="Context.html">Context</a></li><li><a href="Goal.html">Goal</a></li><li><a href="InContextOf.html">InContextOf</a></li><li><a href="IsSupportedBy.html">IsSupportedBy</a></li><li><a href="QuestionNode.html">QuestionNode</a></li><li><a href="QuestionTree.html">QuestionTree</a></li><li><a href="Solution.html">Solution</a></li><li><a href="Strategy.html">Strategy</a></li></ul><h3>Global</h3><ul><li><a href="global.html#adjustLeafNodeStatus">adjustLeafNodeStatus</a></li><li><a href="global.html#applyClassesToSvg">applyClassesToSvg</a></li><li><a href="global.html#applyDescriptionsFromData">applyDescriptionsFromData</a></li><li><a href="global.html#applyFailureStatusFromData">applyFailureStatusFromData</a></li><li><a href="global.html#argTreeJSONToYaml">argTreeJSONToYaml</a></li><li><a href="global.html#argumentContent">argumentContent</a></li><li><a href="global.html#assignHorizontalIndexes">assignHorizontalIndexes</a></li><li><a href="global.html#collectNodesBFS">collectNodesBFS</a></li><li><a href="global.html#connectDB">connectDB</a></li><li><a href="global.html#cosineSimilarity">cosineSimilarity</a></li><li><a href="global.html#deleteThreshold">deleteThreshold</a></li><li><a href="global.html#ensureDirectoryExists">ensureDirectoryExists</a></li><li><a href="global.html#expandWords">expandWords</a></li><li><a href="global.html#extractVariableNames">extractVariableNames</a></li><li><a href="global.html#fileToString">fileToString</a></li><li><a href="global.html#generateArgTreeDiagram">generateArgTreeDiagram</a></li><li><a href="global.html#generateQuestions">generateQuestions</a></li><li><a href="global.html#getFileContent">getFileContent</a></li><li><a href="global.html#getLeafNodes">getLeafNodes</a></li><li><a href="global.html#getPrunedSafetyCaseMarked">getPrunedSafetyCaseMarked</a></li><li><a href="global.html#getResponses">getResponses</a></li><li><a href="global.html#getSafetyCaseMarked">getSafetyCaseMarked</a></li><li><a href="global.html#getTermFrequencyVector">getTermFrequencyVector</a></li><li><a href="global.html#getThresholds">getThresholds</a></li><li><a href="global.html#getThresholdsFor">getThresholdsFor</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#inputYamlPath">inputYamlPath</a></li><li><a href="global.html#loadResponsesFromDB">loadResponsesFromDB</a></li><li><a href="global.html#loadYamlTemplate">loadYamlTemplate</a></li><li><a href="global.html#mapResponsesToLeafNodes">mapResponsesToLeafNodes</a></li><li><a href="global.html#matchToken">matchToken</a></li><li><a href="global.html#maxDensity">maxDensity</a></li><li><a href="global.html#maxWeight">maxWeight</a></li><li><a href="global.html#maxWind">maxWind</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#nodesToDelete">nodesToDelete</a></li><li><a href="global.html#parseAndBuildArgumentTree">parseAndBuildArgumentTree</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseContext">parseContext</a></li><li><a href="global.html#parseGoal">parseGoal</a></li><li><a href="global.html#parseInContextOf">parseInContextOf</a></li><li><a href="global.html#parseIsSupportedBy">parseIsSupportedBy</a></li><li><a href="global.html#parseQuestionTree">parseQuestionTree</a></li><li><a href="global.html#parseSolution">parseSolution</a></li><li><a href="global.html#parseStrategy">parseStrategy</a></li><li><a href="global.html#parseToTree">parseToTree</a></li><li><a href="global.html#parseXMLToJS">parseXMLToJS</a></li><li><a href="global.html#preprocessString">preprocessString</a></li><li><a href="global.html#processFileContent">processFileContent</a></li><li><a href="global.html#processNode">processNode</a></li><li><a href="global.html#propagateRiskLevels">propagateRiskLevels</a></li><li><a href="global.html#prunedFlag">prunedFlag</a></li><li><a href="global.html#reachableNodes">reachableNodes</a></li><li><a href="global.html#removeUnsupportedSn">removeUnsupportedSn</a></li><li><a href="global.html#removeUnusedSnNodes">removeUnusedSnNodes</a></li><li><a href="global.html#reportWebVitals">reportWebVitals</a></li><li><a href="global.html#responseSchema">responseSchema</a></li><li><a href="global.html#router">router</a></li><li><a href="global.html#sanitizeText">sanitizeText</a></li><li><a href="global.html#savePrunedTree">savePrunedTree</a></li><li><a href="global.html#saveResponses">saveResponses</a></li><li><a href="global.html#saveSafetyCaseMarked">saveSafetyCaseMarked</a></li><li><a href="global.html#saveTreeAsSVG">saveTreeAsSVG</a></li><li><a href="global.html#setThresholdsFor">setThresholdsFor</a></li><li><a href="global.html#stemWord">stemWord</a></li><li><a href="global.html#stringToFile">stringToFile</a></li><li><a href="global.html#submissionSchema">submissionSchema</a></li><li><a href="global.html#svgFiles">svgFiles</a></li><li><a href="global.html#synonyms">synonyms</a></li><li><a href="global.html#thresholdSchema">thresholdSchema</a></li><li><a href="global.html#thresholdsModel">thresholdsModel</a></li><li><a href="global.html#timestamp">timestamp</a></li><li><a href="global.html#tokenizeFileContent">tokenizeFileContent</a></li><li><a href="global.html#transformTree">transformTree</a></li><li><a href="global.html#traverseAndBuildTree">traverseAndBuildTree</a></li><li><a href="global.html#updateYamlFileWithMongoData">updateYamlFileWithMongoData</a></li><li><a href="global.html#updateYamlWithResponses">updateYamlWithResponses</a></li><li><a href="global.html#writeUpdatedYaml">writeUpdatedYaml</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Dec 17 2024 13:37:43 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

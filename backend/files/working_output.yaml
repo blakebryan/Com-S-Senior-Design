@@ -1,0 +1,155 @@
+G1:
+  text: Complete a safe flight in controlled airspace
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - S1
+S1:
+  text: Argue that all the hazards of the flight are sufficiently mitigated
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - G2
+    - G3
+G2:
+  text: The risk of mid-air collision is sufficiently mitigated
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - S2
+G3:
+  text: The risk of ground collision is sufficiently mitigated
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - S3
+S2:
+  text: Argue that causes of MAC are mitigated
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - G4
+    - G5
+    - G6
+S3:
+  text: Argue that the causes of ground collision are mitigated
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - G11
+    - G12
+G4:
+  text: The chance of loss of control of the UAS is low
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - S4
+G5:
+  text: The UAS (or crewmember) is able detect other aircraft in the operating region.
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - S5
+G6:
+  text: The UAS (or crewmember) can avoid other aircraft in the operating region.
+  horizontalIndex:
+    absolute: 2
+  undeveloped: true
+G11:
+  text: The chances of a loss of battery event are low
+  horizontalIndex:
+    absolute: 3
+  supportedBy:
+    - Sn2
+G12:
+  text: The chance of loss of control of the UAS is low
+  horizontalIndex:
+    absolute: 4
+  undeveloped: true
+S4:
+  text: Argue that the causes of loss of UAS control are mitigated
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - G7
+    - G8
+    - G9
+    - G10
+S5:
+  text: Argue the ability to detect other aircraft is not hindered
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - G9
+    - G13
+    - G14
+    - G15
+    - G16
+    
+Sn2:
+  text: '"[battery_reserve] == \"sufficient\""'
+  horizontalIndex:
+    absolute: 2
+G7:
+  text: The wind in the OR will be less than the maximum allowed by the airframe.
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - Sn1
+G8:
+  text: Precipitation in the OR will be less than the maximum allowed by the airframe
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - Sn3
+G9:
+  text: Visibility in the OR will be greater than the allowed minimum
+  horizontalIndex:
+    absolute: 3
+  supportedBy:
+    - Sn5
+G10:
+  text: Temperatures in the OR will be within the allowed range
+  horizontalIndex:
+    absolute: 2
+  supportedBy:
+    - Sn4
+G13:
+  text: The pilot and spotters have sufficient training to spot other aircraft
+  horizontalIndex:
+    absolute: 4
+  supportedBy:
+    - Sn6
+G14:
+  text: Detect-and-avoid systems are functioning (if applicable)
+  horizontalIndex:
+    absolute: 5
+  supportedBy:
+    - Sn7
+G15:
+  text: If airspace is sparsely populated, spotter is not needed.
+  horizontalIndex:
+    absolute: 6
+  supportedBy:
+    - Sn8
+G16:
+  text: If airspace is congested, a spotter is needed.
+  horizontalIndex:
+    absolute: 7
+  supportedBy:
+    - Sn8
+Sn1:
+  text: '"[wind_speed] < [max_wind_speed]"'
+Sn3:
+  text: '"[precipitation] < [max_precip]"'
+Sn5:
+  text: '"[min_visibility] < [visibility]"'
+Sn4:
+  text: '"[min_temp] < [temp] < [max_temp]"'
+Sn6:
+  text: '"[flight_hours] > n, [simulation_hours] > m"'
+Sn7:
+  text: '"If [detect_and_avoid] == \"exists\" then [detect_and_avoid] == \"functioning\" else True"'
+Sn8:
+  text: '"If [airspace] == \"sparse\" then [spotter] = True else [spotter] = False"'
+

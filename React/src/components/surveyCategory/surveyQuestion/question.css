@@ -1,0 +1,11 @@
+.questionText{
+    /* width: 200px; */
+    background-color: lightgray;
+}
+.questionAnswers{
+    width: 200px;
+    background-color: lightgray;
+}
+span{
+    margin-right: 30px;
+}

@@ -1,0 +1,19 @@
+{
+    "compilerOptions": {
+      "target": "ES6", // Specifies ECMAScript target version
+      "module": "commonjs", // Use CommonJS modules (Node.js environment)
+      "outDir": "./dist", // Output directory for compiled JavaScript files
+      "allowJs": true, // Allow JavaScript files in the project
+      "checkJs": false, // Enable type-checking for JavaScript files (optional)
+      "esModuleInterop": true, // Allows interop between CommonJS and ES modules
+      "strict": true // Enable strict type-checking options
+    },
+    "include": [
+      "*.ts", // Include all TypeScript files in src folder
+      "*.js"  // Optionally include JS files if you have them in src folder
+    ],
+    "exclude": [
+      "node_modules" // Exclude node_modules from compilation
+    ]
+  }
+  

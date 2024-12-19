@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: gsn_suas/json_yaml_to_yaml.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: gsn_suas/json_yaml_to_yaml.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file json_xml_to_yaml.js
+ * Updates a YAML template using user responses stored in MongoDB.
+ * @author Brady Bargren. ISU ID: az2997
+ */
+
+const fs = require('fs');
+const yaml = require('js-yaml');
+const mongoose = require('mongoose');
+const path = require('path');
+
+// MongoDB connection setup
+mongoose.connect('mongodb://localhost:27017/safety_case');
+
+/**
+ * MongoDB schema and model for user responses.
+ * Each response consists of a question name, the question text, and the answer provided by the user.
+ */
+const responseSchema = new mongoose.Schema({
+    questionName: String,
+    questionText: String,
+    answer: String
+});
+const Response = mongoose.model('Response', responseSchema);
+
+/**
+ * Fetches all user responses from MongoDB.
+ *
+ * @returns {Promise&lt;Array>} A promise that resolves with an array of user responses.
+ */
+const loadResponsesFromDB = () => {
+    return Response.find({}).exec();
+};
+
+/**
+ * Loads a YAML template from a specified file path.
+ *
+ * @param {string} templatePath - The path to the YAML template file.
+ * @returns {Object} The parsed YAML content as a JavaScript object.
+ * @throws Will throw an error if the file cannot be read or parsed.
+ */
+const loadYamlTemplate = (templatePath) => {
+    try {
+        const fileContent = fs.readFileSync(templatePath, 'utf8');
+        return yaml.load(fileContent);
+    } catch (err) {
+        console.error('Error reading YAML template:', err);
+        throw err;
+    }
+};
+
+/**
+ * Removes unsupported solution nodes (Sn) based on user input.
+ *
+ * @param {Object} yamlContent - The YAML content to be updated.
+ * @param {string} featureKey - The key of the feature node being processed.
+ * @param {string} selectedOptionSn - The Sn node corresponding to the user's selected answer.
+ * @param {Array&lt;string>} allSn - An array of all possible Sn nodes for this feature.
+ */
+const removeUnsupportedSn = (yamlContent, featureKey, selectedOptionSn, allSn) => {
+    yamlContent[featureKey].supportedBy = [selectedOptionSn];
+
+    allSn.forEach(sn => {
+        if (sn !== selectedOptionSn &amp;&amp; yamlContent[sn]) {
+            delete yamlContent[sn]; // Remove unselected Sn options from the YAML
+        }
+    });
+};
+
+/**
+ * Updates the YAML structure using user responses.
+ * Selects relevant solution nodes (Sn) based on user input and removes unsupported options.
+ *
+ * @param {Object} yamlContent - The YAML content to be updated.
+ * @param {Array&lt;Object>} jsonResponses - An array of user responses from MongoDB.
+ * @returns {Object} The updated YAML content.
+ */
+const updateYamlWithResponses = (yamlContent, jsonResponses) => {
+    jsonResponses.forEach(response => {
+        switch (response.questionName) {
+            case 'Flight_Hours':
+                removeUnsupportedSn(yamlContent, 'S1', response.answer === 'LessThan_N' ? 'Sn2' : response.answer === 'BetweenNplus1AndM' ? 'Sn3' : 'Sn4', ['Sn2', 'Sn3', 'Sn4']);
+                break;
+
+            case 'Simulation_Hours':
+                removeUnsupportedSn(yamlContent, 'S2', response.answer === 'None' ? 'Sn5' : 'Sn6', ['Sn5', 'Sn6']);
+                break;
+
+            case 'Adverse_Experience':
+                removeUnsupportedSn(yamlContent, 'S3', response.answer === 'none' ? 'Sn7' : response.answer === 'one' ? 'Sn8' : 'Sn9', ['Sn7', 'Sn8', 'Sn9']);
+                break;
+
+            case 'Purpose':
+                removeUnsupportedSn(yamlContent, 'S4', response.answer === 'Recreation' ? 'Sn14' : response.answer === 'SearchRescue' ? 'Sn15' : 'Sn16', ['Sn14', 'Sn15', 'Sn16']);
+                break;
+
+            case 'Hardware':
+                removeUnsupportedSn(yamlContent, 'S5', response.answer === 'x' ? 'Sn17' : response.answer === 'y' ? 'Sn18' : 'Sn19', ['Sn17', 'Sn18', 'Sn19']);
+                break;
+
+            case 'BatteryReserve':
+                removeUnsupportedSn(yamlContent, 'S6', response.answer === 'Insufficient' ? 'Sn20' : 'Sn21', ['Sn20', 'Sn21']);
+                break;
+
+            case 'Wind_Gusts':
+                removeUnsupportedSn(yamlContent, 'S7', response.answer === 'w_Yes' ? 'Sn22' : 'Sn23', ['Sn22', 'Sn23']);
+                break;
+
+            case 'PoorVisibility':
+                removeUnsupportedSn(yamlContent, 'S8', response.answer === 'P_Yes' ? 'Sn24' : 'Sn25', ['Sn24', 'Sn25']);
+                break;
+
+            case 'Precipitation':
+                removeUnsupportedSn(yamlContent, 'S9', response.answer === 'r_Yes' ? 'Sn26' : 'Sn27', ['Sn26', 'Sn27']);
+                break;
+
+            case 'FreezingTemps':
+                removeUnsupportedSn(yamlContent, 'S10', response.answer === 'F_Yes' ? 'Sn28' : 'Sn29', ['Sn28', 'Sn29']);
+                break;
+
+            case 'Certifications':
+                removeUnsupportedSn(yamlContent, 'G10', response.answer === 'CertOne' ? 'Sn10' : response.answer === 'CertTwo' ? 'Sn11' : 'Sn12', ['Sn10', 'Sn11', 'Sn12']);
+                break;
+
+            // Handle more cases as needed
+        }
+    });
+
+    // Remove the self-referencing issue for Sn13
+    if (yamlContent.Sn13 &amp;&amp; yamlContent.Sn13.supportedBy) {
+        delete yamlContent.Sn13.supportedBy; // Remove the invalid reference for Sn13
+    }
+
+    return yamlContent;
+};
+
+/**
+ * Writes the updated YAML content to a specified file.
+ *
+ * @param {Object} updatedYaml - The updated YAML content.
+ * @param {string} outputPath - The path to the output file.
+ */
+const writeUpdatedYaml = (updatedYaml, outputPath) => {
+    try {
+        const yamlString = yaml.dump(updatedYaml);
+        fs.writeFileSync(outputPath, yamlString, 'utf8');
+        console.log(`YAML file successfully updated at ${outputPath}`);
+    } catch (err) {
+        console.error('Error writing YAML file:', err);
+        throw err;
+    }
+};
+
+/**
+ * Main function to update a YAML file using user responses stored in MongoDB.
+ *
+ * @param {string} templatePath - The path to the YAML template file.
+ * @param {string} outputPath - The path to the output YAML file.
+ */
+const updateYamlFileWithMongoData = async (templatePath, outputPath) => {
+    try {
+        const yamlTemplate = loadYamlTemplate(templatePath);   // Load the YAML template
+        const jsonResponses = await loadResponsesFromDB();     // Fetch responses from MongoDB
+
+        // Apply user data, then remove unused options
+        const updatedYaml = updateYamlWithResponses(yamlTemplate, jsonResponses);
+        writeUpdatedYaml(updatedYaml, outputPath);  // Write the updated YAML back
+    } catch (err) {
+        console.error('Error during YAML update:', err);
+    } finally {
+        mongoose.connection.close();  // Close the MongoDB connection after the process is complete
+    }
+};
+
+// Paths to template YAML and output YAML files
+const templateYamlPath = path.join(__dirname, 'templates', 'suas_template.gsn.yaml');
+const outputYamlPath = path.join(__dirname, 'images', 'suas.gsn.yaml');
+
+// Call the main function
+updateYamlFileWithMongoData(templateYamlPath, outputYamlPath);
+
+module.exports = {
+    loadResponsesFromDB,
+    loadYamlTemplate,
+    removeUnsupportedSn,
+    updateYamlWithResponses,
+    writeUpdatedYaml,
+    updateYamlFileWithMongoData,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Response.html">Response</a></li><li><a href="module-Submission.html">Submission</a></li></ul><h3>Classes</h3><ul><li><a href="ArgData.html">ArgData</a></li><li><a href="ArgumentNode.html">ArgumentNode</a></li><li><a href="ArgumentTree.html">ArgumentTree</a></li><li><a href="Context.html">Context</a></li><li><a href="Goal.html">Goal</a></li><li><a href="InContextOf.html">InContextOf</a></li><li><a href="IsSupportedBy.html">IsSupportedBy</a></li><li><a href="QuestionNode.html">QuestionNode</a></li><li><a href="QuestionTree.html">QuestionTree</a></li><li><a href="Solution.html">Solution</a></li><li><a href="Strategy.html">Strategy</a></li></ul><h3>Global</h3><ul><li><a href="global.html#adjustLeafNodeStatus">adjustLeafNodeStatus</a></li><li><a href="global.html#applyClassesToSvg">applyClassesToSvg</a></li><li><a href="global.html#applyDescriptionsFromData">applyDescriptionsFromData</a></li><li><a href="global.html#applyFailureStatusFromData">applyFailureStatusFromData</a></li><li><a href="global.html#argTreeJSONToYaml">argTreeJSONToYaml</a></li><li><a href="global.html#argumentContent">argumentContent</a></li><li><a href="global.html#assignHorizontalIndexes">assignHorizontalIndexes</a></li><li><a href="global.html#collectNodesBFS">collectNodesBFS</a></li><li><a href="global.html#connectDB">connectDB</a></li><li><a href="global.html#cosineSimilarity">cosineSimilarity</a></li><li><a href="global.html#deleteThreshold">deleteThreshold</a></li><li><a href="global.html#ensureDirectoryExists">ensureDirectoryExists</a></li><li><a href="global.html#expandWords">expandWords</a></li><li><a href="global.html#extractVariableNames">extractVariableNames</a></li><li><a href="global.html#fileToString">fileToString</a></li><li><a href="global.html#generateArgTreeDiagram">generateArgTreeDiagram</a></li><li><a href="global.html#generateQuestions">generateQuestions</a></li><li><a href="global.html#getFileContent">getFileContent</a></li><li><a href="global.html#getLeafNodes">getLeafNodes</a></li><li><a href="global.html#getPrunedSafetyCaseMarked">getPrunedSafetyCaseMarked</a></li><li><a href="global.html#getResponses">getResponses</a></li><li><a href="global.html#getSafetyCaseMarked">getSafetyCaseMarked</a></li><li><a href="global.html#getTermFrequencyVector">getTermFrequencyVector</a></li><li><a href="global.html#getThresholds">getThresholds</a></li><li><a href="global.html#getThresholdsFor">getThresholdsFor</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#inputYamlPath">inputYamlPath</a></li><li><a href="global.html#loadResponsesFromDB">loadResponsesFromDB</a></li><li><a href="global.html#loadYamlTemplate">loadYamlTemplate</a></li><li><a href="global.html#mapResponsesToLeafNodes">mapResponsesToLeafNodes</a></li><li><a href="global.html#matchToken">matchToken</a></li><li><a href="global.html#maxDensity">maxDensity</a></li><li><a href="global.html#maxWeight">maxWeight</a></li><li><a href="global.html#maxWind">maxWind</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#nodesToDelete">nodesToDelete</a></li><li><a href="global.html#parseAndBuildArgumentTree">parseAndBuildArgumentTree</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseContext">parseContext</a></li><li><a href="global.html#parseGoal">parseGoal</a></li><li><a href="global.html#parseInContextOf">parseInContextOf</a></li><li><a href="global.html#parseIsSupportedBy">parseIsSupportedBy</a></li><li><a href="global.html#parseQuestionTree">parseQuestionTree</a></li><li><a href="global.html#parseSolution">parseSolution</a></li><li><a href="global.html#parseStrategy">parseStrategy</a></li><li><a href="global.html#parseToTree">parseToTree</a></li><li><a href="global.html#parseXMLToJS">parseXMLToJS</a></li><li><a href="global.html#preprocessString">preprocessString</a></li><li><a href="global.html#processFileContent">processFileContent</a></li><li><a href="global.html#processNode">processNode</a></li><li><a href="global.html#propagateRiskLevels">propagateRiskLevels</a></li><li><a href="global.html#prunedFlag">prunedFlag</a></li><li><a href="global.html#reachableNodes">reachableNodes</a></li><li><a href="global.html#removeUnsupportedSn">removeUnsupportedSn</a></li><li><a href="global.html#removeUnusedSnNodes">removeUnusedSnNodes</a></li><li><a href="global.html#reportWebVitals">reportWebVitals</a></li><li><a href="global.html#responseSchema">responseSchema</a></li><li><a href="global.html#router">router</a></li><li><a href="global.html#sanitizeText">sanitizeText</a></li><li><a href="global.html#savePrunedTree">savePrunedTree</a></li><li><a href="global.html#saveResponses">saveResponses</a></li><li><a href="global.html#saveSafetyCaseMarked">saveSafetyCaseMarked</a></li><li><a href="global.html#saveTreeAsSVG">saveTreeAsSVG</a></li><li><a href="global.html#setThresholdsFor">setThresholdsFor</a></li><li><a href="global.html#stemWord">stemWord</a></li><li><a href="global.html#stringToFile">stringToFile</a></li><li><a href="global.html#submissionSchema">submissionSchema</a></li><li><a href="global.html#svgFiles">svgFiles</a></li><li><a href="global.html#synonyms">synonyms</a></li><li><a href="global.html#thresholdSchema">thresholdSchema</a></li><li><a href="global.html#thresholdsModel">thresholdsModel</a></li><li><a href="global.html#timestamp">timestamp</a></li><li><a href="global.html#tokenizeFileContent">tokenizeFileContent</a></li><li><a href="global.html#transformTree">transformTree</a></li><li><a href="global.html#traverseAndBuildTree">traverseAndBuildTree</a></li><li><a href="global.html#updateYamlFileWithMongoData">updateYamlFileWithMongoData</a></li><li><a href="global.html#updateYamlWithResponses">updateYamlWithResponses</a></li><li><a href="global.html#writeUpdatedYaml">writeUpdatedYaml</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Dec 17 2024 13:37:43 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

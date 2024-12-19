@@ -1,0 +1,4 @@
+﻿Make_and_Model,Max_Wind_Speed,Max_Density_Alt,Max_Takeoff_Weight,Max_Hover_Time,Min_Operating_Temp,Max_Operating_Temp,Max_Precipitation_Rate,Max_Mission_Altitude,Obstacle_Avoidance_Sys,Detect_and_Avoid_Sys
+DJI Mini 4 Pro,16,4000,300,34,0,40,0,4000,Yes,No
+DJI Mavic 3 Pro,21,6000,1100,46,-10,40,0,6000,Yes,Yes
+Autel Evo II Pro V3,12,7000,1999,40,-10,40,0,7000,Yes,No

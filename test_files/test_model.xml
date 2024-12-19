@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<featureModel>
+	<properties>
+		<calculations key="calculatefeatures" value="true"/>
+		<graphics key="legendautolayout" value="true"/>
+		<graphics key="showshortnames" value="false"/>
+		<graphics key="layout" value="horizontal"/>
+		<graphics key="showcollapsedconstraints" value="true"/>
+		<graphics key="legendhidden" value="false"/>
+		<calculations key="calculateconstraints" value="false"/>
+		<calculations key="runcalculationsautomatically" value="true"/>
+		<graphics key="layoutalgorithm" value="1"/>
+	</properties>
+	<struct>
+		<and mandatory="true" name="sUAS Characteristics">
+			<or mandatory="true" name="Airspace">
+				<feature name="Sparse"/>
+				<feature name="Congested"/>
+			</or>
+			<and mandatory="true" name="Weather">
+				<alt mandatory="true" name="Wind_Gusts">
+					<graphics key="collapsed" value="true"/>
+					<feature name="LT_MAX"/>
+					<feature name="GTE_MAX"/>
+				</alt>
+				<alt mandatory="true" name="Visibility">
+					<graphics key="collapsed" value="true"/>
+					<feature name="GT_min_visibility"/>
+					<feature name="LTE_min_visibility"/>
+				</alt>
+			</and>
+		</and>
+	</struct>
+	<constraints>
+		<rule>
+			<disj>
+				<var>Sparse</var>
+				<var>Congested</var>
+			</disj>
+		</rule>
+	</constraints>
+</featureModel>

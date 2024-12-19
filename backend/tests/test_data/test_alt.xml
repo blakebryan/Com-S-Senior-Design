@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<featureModel chosenLayoutAlgorithm="1">
+    <struct>
+        <and abstract="true" mandatory="true" name="Multiple_Choice_Test">
+            <alt abstract="true" mandatory="true" name="TUPLE_Favorite_Color">
+                <feature mandatory="true" name="Red"/>
+                <feature mandatory="true" name="Blue"/>
+                <feature mandatory="true" name="Green"/>
+            </alt>
+            <alt abstract="true" mandatory="true" name="TUPLE_User_Role">
+                <feature mandatory="true" name="Admin"/>
+                <feature mandatory="true" name="User"/>
+                <feature mandatory="true" name="Guest"/>
+            </alt>
+        </and>
+    </struct>
+    <calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+    <comments>
+        <c>Simple ALT model with TUPLE_ prefix for multiple choice questions</c>
+    </comments>
+    <featureOrder userDefined="false"/>
+</featureModel>

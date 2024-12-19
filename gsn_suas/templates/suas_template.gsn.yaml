@@ -1,0 +1,260 @@
+G1:
+ text: "UASFlightModel"
+ supportedBy: [G2, G3, G4]
+
+G2:
+ text: "Crew_Characteristics"
+ supportedBy: [Sn1, Sn2]
+
+Sn1:
+ text: "BOOL_Pilot_Certified"
+
+Sn2:
+ text: "BOOL_Spotter_Present"
+
+G3:
+ text: "Airspace_Characteristics"
+ supportedBy: [G5, G6, G7, G8, G9, ]
+
+G5:
+ text: "Wind"
+ supportedBy: [Sn3, Sn4, Sn5]
+
+Sn3:
+ text: "FLOAT_Wind_Gusts"
+
+Sn4:
+ text: "FLOAT_Wind_Sustained"
+
+Sn5:
+ text: "BOOL_Wind_Shear"
+
+G6:
+ text: "Density_Altitude"
+ supportedBy: [Sn6, Sn7, Sn8, Sn9, Sn10, Sn11, Sn12]
+
+Sn6:
+ text: "INT_Max_AGL_Alt"
+
+Sn7:
+ text: "INT_Alt_Above_Sea_Level_At_Takeoff_(Feet)"
+
+Sn8:
+ text: "INT_Pressure_Alt_At_Takeoff_(Feet)"
+
+Sn9:
+ text: "FLOAT_Air_Pressure_At_Takeoff"
+
+Sn10:
+ text: "FLOAT_Air_Temp_at_Takeoff_(Celsius)"
+
+Sn11:
+ text: "FLOAT_Air_Temp_at_Max_Altitude_(Celsius)"
+
+Sn12:
+ text: "CALC_Density_Alt_at_Takeoff"
+
+G7:
+ text: "Precipitation"
+ supportedBy: [Sn13, Sn14]
+
+Sn13:
+ text: "FLOAT_Rain_rate"
+
+Sn14:
+ text: "FLOAT_Snow_sleet_rate"
+
+G8:
+ text: "Visibility"
+ supportedBy: [Sn15, Sn16]
+
+Sn15:
+ text: "INT_Ceiling_Dist"
+
+Sn16:
+ text: "INT_Visibility_Dist"
+
+G9:
+ text: "Airspace_Info"
+ supportedBy: [G10, Sn17]
+
+G10:
+ text: "TUPLE_Air_Traffic_in_OR"
+ supportedBy: [Sn18, Sn19, Sn20]
+
+Sn17:
+ text: "BOOL_NOTAM_Info"
+
+Sn18:
+ text: "Low_Air_Traffic"
+
+Sn19:
+ text: "Med_Air_Traffic"
+
+Sn20:
+ text: "High_Air_Traffic"
+
+G4:
+ text: "Ground_Characteristics"
+ supportedBy: [G11, G12]
+
+G11:
+ text: "Ground_Congestion"
+ supportedBy: [G13]
+
+G13:
+ text: "TUPLE_Ground_Traffic_In_OR"
+ supportedBy: [Sn21, Sn22, Sn23]
+
+Sn21:
+ text: "Low_Ground_Traffic"
+
+Sn22:
+ text: "Med_Ground_Traffic"
+
+Sn23:
+ text: "High_Ground_Traffic"
+
+G12:
+ text: "Ground_Obstacles"
+ supportedBy: [G14]
+
+G14:
+ text: "LIST_Ground_Obstacles_In_OR"
+ supportedBy: [G15, Sn24]
+
+G15:
+ text: "TUPLE_Obstacle_Location"
+ supportedBy: [Sn25, Sn26]
+
+Sn24:
+ text: "INT_Obstacle_Height_AGL"
+
+Sn25:
+ text: "FLOAT_Obstacle_Longitude"
+
+Sn26:
+ text: "FLOAT_Obstacle_Latitude"
+
+G27:
+ text: "Mission_Characteristics"
+ supportedBy: [G16, G17]
+
+G16:
+ text: "UAS_Specifications"
+ supportedBy: [G18, G19, G20]
+
+G18:
+ text: "UAS_General_Info"
+ supportedBy: [G21]
+
+G21:
+ text: "TUPLE_Make_and_Model"
+ supportedBy: [Sn27, Sn28, Sn29, Sn30, Sn31]
+
+Sn27:
+ text: "Other"
+
+Sn28:
+ text: "INT_Max_Wind_Speed"
+
+Sn29:
+ text: "INT_Max_Density_Alt"
+
+Sn30:
+ text: "INT_Max_Takeoff_Weight"
+
+Sn31:
+ text: "[description placeholder]"
+
+G19:
+ text: "Battery"
+ supportedBy: [Sn32, Sn33, G22, Sn34, Sn35]
+
+Sn32:
+ text: "INT_Max_Hover_Time"
+
+Sn33:
+ text: "FLOAT_Current_Battery_Charge"
+
+G22:
+ text: "TUPLE_Current_Battery_Health"
+ supportedBy: [Sn36, Sn37, Sn38]
+
+Sn34:
+ text: "INT_Min_Operating_Temp"
+
+Sn35:
+ text: "INT_Max_Operating_Temp"
+
+Sn36:
+ text: "Low_Battery_Health"
+
+Sn37:
+ text: "Med_Battery_Health"
+
+Sn38:
+ text: "Good_Battery_Health"
+
+G20:
+ text: "Sensors"
+ supportedBy: [Sn39, Sn40]
+
+Sn39:
+ text: "BOOL_Obstacle_Avoidance_Sys"
+
+Sn40:
+ text: "BOOL_Aircraft_Avoidance_Sys"
+
+G17:
+ text: "Flight_Characteristics"
+ supportedBy: [G23, G24, Sn41, G25, Sn42]
+
+G23:
+ text: "Mission_Location"
+ supportedBy: [Sn43, Sn44, Sn45]
+
+Sn43:
+ text: "FLOAT_Location_Longitude"
+
+Sn44:
+ text: "FLOAT_Location_Latitude"
+
+Sn45:
+ text: "STRING_City_Name or STRING_Zip_Code alternative"
+
+G24:
+ text: "Mission_Area"
+ supportedBy: [Sn46, G26]
+
+Sn46:
+ text: "INT_Cylinder_Radius"
+
+G26:
+ text: "LIST_Polygon_List_Of_Points"
+ supportedBy: [Sn47, Sn48]
+
+Sn47:
+ text: "FLOAT_Longitude_Of_Point"
+
+Sn48:
+ text: "FLOAT_Latitude_Of_Point"
+
+Sn41:
+ text: "INT_Max_Mission_Altitude"
+
+G25:
+ text: "TUPLE_Mission_Type"
+ supportedBy: [Sn49, Sn50, Sn51]
+
+Sn42:
+ text: "INT_Mission_Estimated_Length"
+
+Sn49:
+ text: "Recreation"
+
+Sn50:
+ text: "Delivery"
+
+Sn51:
+ text: "Emergency"

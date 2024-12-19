@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<featureModel chosenLayoutAlgorithm="1">
+		<struct>
+		    <and abstract="true" mandatory="true" name="UASFlightModel">
+		        <and abstract="true" mandatory="true" name="Crew_Characteristics">
+		            <feature mandatory="true" name="BOOL_Pilot_Certified"/>
+	                <feature mandatory="true" name="BOOL_Spotter_Present"/>
+                </and>
+                <and abstract="true" mandatory="true" name="Airspace_Characteristics">
+                    <and abstract="true" mandatory="true" name="Wind">
+                        <feature mandatory="true" name="FLOAT_Wind_Gusts"/>
+                        <feature mandatory="true" name="FLOAT_Wind_Sustained"/>
+                        <feature mandatory="true" name="BOOL_Wind_Shear"/>
+                    </and>
+                    <and abstract="true" mandatory="true" name="Density_Altitude">
+                        <feature mandatory="true" name="INT_Max_AGL_Alt"/>
+                        <feature mandatory="true" name="INT_Alt_Above_Sea_Level_At_Takeoff_(Feet)"/>
+                        <feature mandatory="true" name="INT_Pressure_Alt_At_Takeoff_(Feet)"/>
+                        <feature mandatory="true" name="FLOAT_Air_Pressure_At_Takeoff"/>
+                        <feature mandatory="true" name="FLOAT_Air_Temp_at_Takeoff_(Celsius)"/>
+                        <feature mandatory="true" name="FLOAT_Air_Temp_at_Max_Altitude_(Celsius)"/>
+                        <feature mandatory="true" name="CALC_Density_Alt_at_Takeoff"/>
+                    </and>
+                    <and abstract="true" mandatory="true" name="Precipitation">
+                        <feature mandatory="true" name="FLOAT_Rain_rate"/>
+                        <feature mandatory="true" name="FLOAT_Snow_sleet_rate"/>
+                    </and>
+                    <and abstract="true" mandatory="true" name="Visibility">
+                        <feature mandatory="true" name="INT_Ceiling_Dist"/>
+                        <feature mandatory="true" name="INT_Visibility_Dist"/>
+                    </and>
+                    <and abstract="true" mandatory="true" name="Airspace_Info">
+                        <alt mandatory="true" name="TUPLE_Air_Traffic_in_OR">
+                            <feature mandatory="true" name="Low_Air_Traffic"/>
+                            <feature mandatory="true" name="Med_Air_Traffic"/>
+                            <feature mandatory="true" name="High_Air_Traffic"/>
+                        </alt>
+                        <feature mandatory="true" name="BOOL_NOTAM_Info"/>
+                    </and>
+                </and>
+                <and abstract="true" name="Ground_Characteristics">
+                    <and abstract="true" name="Ground_Congestion">
+                        <alt mandatory="true" name="TUPLE_Ground_Traffic_In_OR">
+                            <feature mandatory="true" name="Low_Ground_Traffic"/>
+                            <feature mandatory="true" name="Med_Ground_Traffic"/>
+                            <feature mandatory="true" name="High_Ground_Traffic"/>
+                        </alt>
+                    </and>
+                    <and abstract="true" name="Ground_Obstacles">
+                        <and name="LIST_Ground_Obstacles_In_OR">
+                            <feature name="TUPLE_Obstacle_Location">
+                                <feature mandatory="true" name="FLOAT_Obstacle_Longitude"/>
+                                <feature mandatory="true" name="FLOAT_Obstacle_Latitude"/>
+                            </feature>
+                            <feature mandatory="true" name="INT_Obstacle_Height_AGL"/>
+                        </and>
+                    </and>
+                </and>
+                <and abstract="true" mandatory="true" name="Mission_Characteristics">
+                    <and abstract="true" mandatory="true" name="UAS_Specifications">
+                        <and abstract="true" mandatory="true" name="UAS_General_Info">
+                            <and mandatory="true" name="TUPLE_Make_and_Model">
+                                <description/>
+                                <feature name="Other"/>
+                                <feature mandatory="true" name="INT_Max_Wind_Speed"/>
+                                <feature mandatory="true" name="INT_Max_Density_Alt"/>
+                                <feature mandatory="true" name="INT_Max_Takeoff_Weight"/>
+                            </and>
+                        </and>
+                        <and abstract="true" mandatory="true" name="Battery">
+                            <feature mandatory="true" name="INT_Max_Hover_Time"/>
+                            <feature mandatory="true" name="FLOAT_Current_Battery_Charge"/>
+                            <alt mandatory="true" name="TUPLE_Current_Battery_Health">
+                                <feature mandatory="true" name="Low_Battery_Health"/>
+                                <feature mandatory="true" name="Med_Battery_Health"/>
+                                <feature mandatory="true" name="Good_Battery_Health"/>
+                            </alt>
+                            <feature mandatory="true" name="INT_Min_Operating_Temp"/>
+                            <feature mandatory="true" name="INT_Max_Operating_Temp"/>
+                        </and>
+                        <and abstract="true" name="Sensors">
+                            <feature mandatory="true" name="BOOL_Obstacle_Avoidance_Sys"/>
+                            <feature mandatory="true" name="BOOL_Aircraft_Avoidance_Sys"/>
+                        </and>
+                    </and>
+                    <and abstract="true" mandatory="true" name="Flight_Characteristics">
+                        <or abstract="true" name="Mission_Location">
+                            <feature mandatory="alternative" name="TUPLE_Longitude_Latitude">
+                                <feature mandatory="alternative" name="FLOAT_Location_Longitude"/>
+                                <feature mandatory="alternative" name="FLOAT_Location_Latitude"/>
+                            </feature>
+                            <feature mandatory="alternative" name="STRING_Zip_Code"/>
+                            <feature mandatory="alternative" name="STRING_City_Name"/>
+                        </or>
+                        <or abstract="true" name="Mission_Area">
+                            <feature mandatory="alternative" name="INT_Cylinder_Radius"/>
+                            <and mandatory="alternative" name="LIST_Polygon_List_Of_Points">
+                                <feature mandatory="true" name="FLOAT_Longitude_Of_Point"/>
+                                <feature mandatory="true" name="FLOAT_Latitude_Of_Point"/>
+                            </and>
+                        </or>
+                        <feature mandatory="true" name="INT_Max_Mission_Altitude"/>
+                        <alt mandatory="true" name="TUPLE_Mission_Type">
+                            <feature mandatory="true" name="Recreation"/>
+                            <feature mandatory="true" name="Delivery"/>
+                            <feature mandatory="true" name="Emergency"/>
+                        </alt>
+                        <feature mandatory="true" name="INT_Mission_Estimated_Length"/>
+                    </and>
+                </and>
+            </and>
+        </struct>
+        <constraints/>
+        <calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+        <comments/>
+        <featureOrder userDefined="false"/>
+    </featureModel>

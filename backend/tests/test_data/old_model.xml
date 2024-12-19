@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<featureModel>
+	<properties>
+		<calculations key="calculatefeatures" value="true"/>
+		<graphics key="legendautolayout" value="true"/>
+		<graphics key="showshortnames" value="false"/>
+		<graphics key="layout" value="horizontal"/>
+		<graphics key="showcollapsedconstraints" value="true"/>
+		<graphics key="legendhidden" value="false"/>
+		<calculations key="calculateconstraints" value="false"/>
+		<calculations key="runcalculationsautomatically" value="true"/>
+		<graphics key="layoutalgorithm" value="1"/>
+	</properties>
+	<struct>
+		<and mandatory="true" name="sUAS_Characteristics">
+			<and mandatory="true" name="Pilot">
+				<graphics key="collapsed" value="false"/>
+				<and mandatory="true" name="Training">
+					<alt mandatory="true" name="Flight_Hours">
+						<feature name="LessThan_N"/>
+						<feature name="BetweenNplus1AndM"/>
+						<feature name="GreaterMplus1"/>
+					</alt>
+					<alt mandatory="true" name="Simulation_Hours">
+						<feature name="None"/>
+						<feature name="AtLeastM"/>
+					</alt>
+					<alt mandatory="true" name="Adverse_Experience">
+						<feature name="none"/>
+						<feature name="one"/>
+						<feature name="twoPlus"/>
+					</alt>
+				</and>
+				<feature name="Incident_History"/>
+				<or mandatory="true" name="Certifications">
+					<graphics key="collapsed" value="true"/>
+					<feature name="CertOne"/>
+					<feature name="CertTwo"/>
+					<feature name="CertThree"/>
+				</or>
+			</and>
+			<or mandatory="true" name="Airspace">
+				<feature name="Sparse"/>
+				<feature name="Congested"/>
+				<feature name="Humans"/>
+			</or>
+			<and mandatory="true" name="Mission">
+				<alt mandatory="true" name="Purpose">
+					<feature name="Recreation"/>
+					<feature name="SearchRescue"/>
+					<feature name="Delivery"/>
+				</alt>
+			</and>
+			<or mandatory="true" name="Vehicle">
+				<alt name="Hardware">
+					<graphics key="collapsed" value="true"/>
+					<feature name="x"/>
+					<feature name="y"/>
+					<feature name="z"/>
+				</alt>
+				<alt name="BatteryReserve">
+					<feature name="Insufficient"/>
+					<feature name="Sufficient"/>
+				</alt>
+			</or>
+			<feature name="Organization"/>
+			<feature mandatory="true" name="Regulations"/>
+			<and mandatory="true" name="Weather">
+				<alt mandatory="true" name="Wind_Gusts">
+					<graphics key="collapsed" value="true"/>
+					<feature name="w_Yes"/>
+					<feature name="w_no"/>
+				</alt>
+				<alt mandatory="true" name="PoorVisibility">
+					<graphics key="collapsed" value="true"/>
+					<feature name="P_yes"/>
+					<feature name="p_no"/>
+				</alt>
+				<alt mandatory="true" name="Precipitation">
+					<graphics key="collapsed" value="true"/>
+					<feature name="r_yes"/>
+					<feature name="r_no"/>
+				</alt>
+				<alt mandatory="true" name="FreezingTemps">
+					<graphics key="collapsed" value="true"/>
+					<feature name="F_yes"/>
+					<feature name="F_no"/>
+				</alt>
+			</and>
+		</and>
+	</struct>
+	<constraints>
+		<rule>
+			<disj>
+				<var>Sparse</var>
+				<var>Congested</var>
+			</disj>
+		</rule>
+	</constraints>
+</featureModel>

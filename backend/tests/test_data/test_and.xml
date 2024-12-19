@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+	<featureModel chosenLayoutAlgorithm="1">
+    <struct>
+        <and abstract="true" mandatory="true" name="Feature_Type_Test">
+            <and abstract="true" mandatory="true" name="Basic_Types">
+                <feature mandatory="true" name="INT_Age"/>
+                <feature mandatory="true" name="FLOAT_Temperature"/>
+                <feature mandatory="true" name="BOOL_Is_Active"/>
+                <feature mandatory="true" name="STRING_City_Name"/>
+                <feature mandatory="true" name="STRING_Zip_Code"/>
+            </and>
+            <and abstract="true" mandatory="true" name="Complex_Types">
+                <alt abstract="true" mandatory="true" name="TUPLE_Color_Choice">
+                    <feature mandatory="true" name="Red"/>
+                    <feature mandatory="true" name="Blue"/>
+                    <feature mandatory="true" name="Green"/>
+                </alt>
+                <and abstract="true" mandatory="true" name="LIST_Favorite_Foods">
+                    <feature mandatory="true" name="Food_Item"/>
+                    <feature mandatory="true" name="Rating"/>
+                </and>
+                <feature mandatory="true" name="CALC_Total_Score"/>
+            </and>
+            <and abstract="true" mandatory="true" name="Default_Behaviors">
+                <feature mandatory="true" name="No_Prefix_Multiple_Choice"/>
+                <feature mandatory="true" name="No_Prefix_Text_Input"/>
+                <feature mandatory="true" name="Contains_Yes"/>
+                <feature mandatory="true" name="Contains_No"/>
+            </and>
+        </and>
+    </struct>
+        <constraints/>
+        <calculations Auto="true" Constraints="true" Features="true" Redundant="true" Tautology="true"/>
+        <comments/>
+        <featureOrder userDefined="false"/>
+    </featureModel>

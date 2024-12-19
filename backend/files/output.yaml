@@ -1,0 +1,283 @@
+G1:
+  text: Complete a safe flight in controlled airspace
+  horizontalIndex:
+    absolute: 0
+  inContextOf:
+    - C1
+  supportedBy:
+    - S1
+C1:
+  text: In the context of all the information from the product line.
+  horizontalIndex:
+    absolute: 0
+S1:
+  text: Argue that all the hazards of the flight are sufficiently mitigated
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - G2
+    - G3
+G2:
+  text: The risk of mid-air collision is sufficiently mitigated
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - S2
+G3:
+  text: The risk of ground collision is sufficiently mitigated
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - S3
+S2:
+  text: Argue that causes of MAC are mitigated
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - G4
+    - G5
+    - G6
+S3:
+  text: Argue that the causes of ground collision are mitigated
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - G11
+    - G12
+G4:
+  text: The chance of loss of control of the UAS is low
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - S4
+G5:
+  text: The UAS (or crewmember) is able detect other aircraft in the operating region.
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - S5
+G6:
+  text: The UAS (or crewmember) can avoid other aircraft in the operating region.
+  horizontalIndex:
+    absolute: 2
+  supportedBy:
+    - S5
+    - S6
+G11:
+  text: The chances of a loss of battery event are low
+  horizontalIndex:
+    absolute: 3
+  supportedBy:
+    - S8
+G12:
+  text: The chance of loss of control of the UAS is low
+  horizontalIndex:
+    absolute: 4
+  supportedBy:
+    - S4
+    - S6
+S4:
+  text: Argue that the causes of loss of UAS control are mitigated
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - G8
+    - G9
+    - G10
+    - G13
+    - G19
+S5:
+  text: Argue the ability to detect other aircraft is not hindered
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - G9
+    - G14
+    - G16
+    - G23
+S6:
+  text: Argue the pilot (or crewmember) has sufficient skill to pilot the UAS
+  horizontalIndex:
+    absolute: 2
+  supportedBy:
+    - G15
+S8:
+  text: Argue over the causes of loss of battery events
+  horizontalIndex:
+    absolute: 3
+  supportedBy:
+    - G20
+    - G21
+    - G22
+G8:
+  text: Precipitation in the OR will be less than the maximum allowed by the UAS
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - Sn3
+G9:
+  text: Visibility in the OR will be greater than the allowed minimum
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - S9
+G10:
+  text: Temperatures in the OR will be within the allowed range (Same as G22)
+  horizontalIndex:
+    absolute: 2
+  undeveloped: true
+G13:
+  text: The winds in the OR will be within the allowed limits.
+  horizontalIndex:
+    absolute: 3
+  supportedBy:
+    - S7
+G19:
+  text: The density altitude at launch wil be less than the maximum allowed by the UAS
+  horizontalIndex:
+    absolute: 4
+  supportedBy:
+    - Sn11
+G14:
+  text: 'UAS has a detect-and-avoid system '
+  horizontalIndex:
+    absolute: 5
+  supportedBy:
+    - Sn4
+G16:
+  text: If airspace is congested, a spotter is needed.
+  horizontalIndex:
+    absolute: 6
+  supportedBy:
+    - Sn8
+G23:
+  text: UAS has an obstacle avoidance system
+  horizontalIndex:
+    absolute: 7
+  supportedBy:
+    - Sn7
+G15:
+  text: Show the pilot is certified to fly
+  horizontalIndex:
+    absolute: 8
+  supportedBy:
+    - Sn9
+G20:
+  text: The battery will have sufficent reserves for the flight
+  horizontalIndex:
+    absolute: 9
+  supportedBy:
+    - Sn2
+G21:
+  text: The battery health will not be poor
+  horizontalIndex:
+    absolute: 10
+  supportedBy:
+    - Sn12
+G22:
+  text: The air temperature in the OR will be within the allowed limits for the battery.
+  horizontalIndex:
+    absolute: 11
+  supportedBy:
+    - Sn13
+Sn3:
+  text: '"[Rain_Rate] < [Max_Precipitation_Rate] AND [Snow_Sleet_Rate] < [Max_Precipitation_Rate]"'
+  horizontalIndex:
+    absolute: 0
+S9:
+  text: Argue both Visibility and Ceiling are greater than the allowed minimum
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - G24
+    - G26
+S7:
+  text: Argue over all the types of winds in the OR
+  horizontalIndex:
+    absolute: 2
+  supportedBy:
+    - G7
+    - G17
+    - G18
+Sn11:
+  text: '"[Density_Alt_at_Takeoff] < [Max_Altitude]"'
+  horizontalIndex:
+    absolute: 3
+Sn4:
+  text: '"[Detect_and_Avoid_Sys]"'
+  horizontalIndex:
+    absolute: 4
+Sn8:
+  text: '"If [Air_Traffic_in_OR] == \"High_Air_Traffic\" then [Spotter_Present] == True"'
+  horizontalIndex:
+    absolute: 5
+Sn7:
+  text: '"[Obstacle_Avoidance_Sys] "'
+  horizontalIndex:
+    absolute: 6
+Sn9:
+  text: '"[Pilot_Certified]\n"'
+  horizontalIndex:
+    absolute: 7
+Sn2:
+  text: '"[Current_Battery_Charge] * [Max_Hover_Time] < [Mission_Estimated_Length]\n"'
+  horizontalIndex:
+    absolute: 8
+Sn12:
+  text: '"[Current_Battery_Health] != \"Low_Battery_Health\""'
+  horizontalIndex:
+    absolute: 9
+Sn13:
+  text: '"[Min_Operating_Temp] < [Air_Temp_at_Takeoff] < [Max_Operating_Temp]"'
+  horizontalIndex:
+    absolute: 10
+G24:
+  text: Visibility is greater than the radius of the flight from takeoff.
+  horizontalIndex:
+    absolute: 0
+  supportedBy:
+    - Sn5
+G26:
+  text: Ceiling will be greater than the maximum altitude to be flown.
+  horizontalIndex:
+    absolute: 1
+  supportedBy:
+    - Sn14
+G7:
+  text: The sustained wind in the OR will be less than the maximum allowed by the airframe.
+  horizontalIndex:
+    absolute: 2
+  supportedBy:
+    - Sn1
+G17:
+  text: Wind gusts in the OR will be less than the maximum allowed by the airframe.
+  horizontalIndex:
+    absolute: 3
+  supportedBy:
+    - Sn6
+G18:
+  text: Wind shear will not be present in the OR
+  horizontalIndex:
+    absolute: 4
+  supportedBy:
+    - Sn10
+Sn5:
+  text: '"[Visbility_dist] > [Cylinder_Radius]"'
+  horizontalIndex:
+    absolute: 0
+Sn14:
+  text: '"[Ceiling_Dist] > [Max_Mission_Altitude]"'
+  horizontalIndex:
+    absolute: 1
+Sn1:
+  text: '"[Sustained_Winds] < [Max_Wind_Speed]"'
+  horizontalIndex:
+    absolute: 2
+Sn6:
+  text: '"[Wind_Gusts] < [Max_Wind_Speed]"'
+  horizontalIndex:
+    absolute: 3
+Sn10:
+  text: '"[Wind_Shear] == False"'
+  horizontalIndex:
+    absolute: 4

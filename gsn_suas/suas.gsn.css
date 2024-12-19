@@ -1,0 +1,34 @@
+/* General GSN styles */
+.gsndiagram {
+    font-family: Arial, sans-serif;
+}
+
+.gsnelem {
+    /* Remove fill and stroke to allow specific classes to define them */
+    fill: none;
+    stroke: none;
+}
+
+/* Style for Low Risk nodes */
+.low-risk .border {
+    fill: Aquamarine;
+    stroke: darkgreen;
+}
+
+/* Style for Moderate Risk nodes */
+.moderate-risk .border {
+    fill: yellow;
+    stroke: orange;
+}
+
+/* Style for High Risk nodes */
+.high-risk .border {
+    fill: lightpink;
+    stroke: darkred;
+}
+
+/* Text styling */
+.gsnelem text,
+.gsnelem a {
+    fill: black;
+}

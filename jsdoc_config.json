@@ -1,0 +1,12 @@
+{
+    "source": {
+        "includePattern": ".js",
+        "include": ["./backend", "./gsn_suas", "./React"],
+        "exclude": ["./backend/node_modules", "./backend/logs", "./backend/data", "./gsn_suas/node_modules", "./React/node_modules"]
+    },
+    "recurseDepth": 10,
+    "opts": {
+        "destination": "./docs/javascript_javadoc",
+        "recurse": true
+    }
+}

@@ -1,0 +1,82 @@
+/* Full page and container styling */
+.survey-results, .container {
+    height: 100%;
+    /* Keeping the background consistent */
+    background-color: lightgrey; /* If you want to enable background */
+    padding: 20px; /* Ensures content is not flush with the edges */
+}
+
+/* Subheader styling */
+.subheader {
+    padding: 10px;
+    background-color: darkblue;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+}
+
+/* Individual question-answer block */
+.survey-response {
+    padding: 15px;
+    background-color: white;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+/* Hover effect for each survey response */
+.survey-response:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Question styling */
+.survey-response h5 {
+    font-size: 1.2rem;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.prevButton, .nextButton{
+    width: 100%;
+    height:100%;
+    font-size: 20px;
+    text-align: center;
+    vertical-align: middle;
+    line-height: 50px;
+}
+
+.prevCol, .nextCol{
+    width: 100px;
+    padding: 0 !important;
+}
+
+/* Answer styling */
+.survey-response p {
+    font-size: 1rem;
+    color: #007bff; /* Keep answers distinct in blue */
+    font-weight: bold;
+}
+
+/* Optional responsiveness to ensure good look on mobile */
+@media (max-width: 768px) {
+    .survey-response {
+        padding: 10px;
+    }
+
+    .survey-response h5 {
+        font-size: 1rem;
+    }
+
+    .survey-response p {
+        font-size: 0.9rem;
+    }
+}
+
+.white-bg{
+    background-color: white;
+}

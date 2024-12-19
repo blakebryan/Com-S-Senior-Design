@@ -1,0 +1,15 @@
+{
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-env": "^7.26.0",
+    "babel-jest": "^29.7.0",
+    "jest": "^29.7.0",
+    "jsdoc": "^4.0.4"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "javadoc": "^2.0.2"
+  }
+}

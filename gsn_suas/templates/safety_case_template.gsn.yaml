@@ -1,0 +1,227 @@
+G1:
+ text: "Complete a safe flight in controlled airspace"
+ supportedBy: [S1]
+ inContextOf: [C1]
+
+C1:
+ text: "In the context of all the information from the product line."
+
+S1:
+ text: "Argue that all the hazards of the flight are sufficiently mitigated"
+ supportedBy: [G2, G3]
+
+G2:
+ text: "The risk of mid-air collision is sufficiently mitigated"
+ supportedBy: [S2]
+ horizontalIndex: { absolute: 0 }
+
+G3:
+ text: "The risk of ground collision is sufficiently mitigated"
+ supportedBy: [S3]
+ horizontalIndex: { absolute: 1 }
+
+S2:
+ text: "Argue that causes of MAC are mitigated"
+ supportedBy: [G4, G5, G6]
+ horizontalIndex: { absolute: 0 }
+
+G4:
+ text: "The chance of loss of control of the UAS is low"
+ supportedBy: [S4]
+ horizontalIndex: { absolute: 0 }
+
+G5:
+ text: "The UAS (or crewmember) is able to detect other aircraft in the operating region."
+ supportedBy: [S5]
+ horizontalIndex: { absolute: 2 }
+
+G6:
+ text: "The UAS (or crewmember) can avoid other aircraft in the operating region."
+ supportedBy: [S6]
+ horizontalIndex: { absolute: 1 }
+
+S5:
+ text: "Argue the ability to detect other aircraft is not hindered."
+ supportedBy: [G9, G14, G16, G23]
+ horizontalIndex: { absolute: 2 }
+
+G9:
+ text: "Visibility in the OR will be greater than the allowed minimum."
+ supportedBy: [S9]
+ horizontalIndex: { absolute: 6 }
+
+S9:
+ text: "Argue both Visibility and Ceiling are greater than the allowed minimum."
+ supportedBy: [G24, G26]
+ horizontalIndex: { absolute: 5 }
+
+G24:
+ text: "Visibility is greater than the radius of the flight from takeoff."
+ supportedBy: [Sn5]
+ horizontalIndex: { absolute: 3 }
+
+Sn5:
+ text: "[Visibility_dist] > Cylinder_Radius"
+ horizontalIndex: { absolute: 3 }
+
+G26:
+ text: "Ceiling will be greater than the maximum altitude to be flown."
+ supportedBy: [Sn14]
+ horizontalIndex: { absolute: 4 }
+
+Sn14:
+ text: "[Ceiling_Dist] > Max_Mission_Altitude"
+ horizontalIndex: { absolute: 4 }
+
+G14:
+ text: "UAS has a detect-and-avoid system"
+ supportedBy: [Sn4]
+ horizontalIndex: { absolute: 8 }
+
+Sn4:
+ text: "[Detect_and_Avoid_System] == True"
+ horizontalIndex: { absolute: 6 }
+
+G16:
+ text: "If airspace is congested, a spotter is needed."
+ supportedBy: [Sn8]
+ horizontalIndex: { absolute: 5 }
+
+Sn8:
+ text: "If [Air_Traffic_in_OR] == 'High_Air_Traffic' then [Spotter_Present] == True"
+ horizontalIndex: { absolute: 3 }
+
+G23:
+ text: "UAS has an obstacle avoidance system."
+ supportedBy: [Sn7]
+ horizontalIndex: { absolute: 6 }
+
+Sn7:
+ text: "[Obstacle_Avoidance_System] == True"
+ horizontalIndex: { absolute: 6 }
+
+S4:
+ text: "Argue that the causes of loss of UAS control are mitigated."
+ supportedBy: [G8, G10, G13, G19]
+ horizontalIndex: { absolute: 0 }
+
+G8:
+ text: "Precipitation in the OR will be less than the maximum allowed by the UAS"
+ supportedBy: [Sn3]
+ horizontalIndex: { absolute: 0 }
+
+Sn3:
+ text: "[Rain_rate] < Max_Precipitation_Rate AND [Snow_Sleet_Rate] < Max_Precipitation_Rate"
+ horizontalIndex: { absolute: 0 }
+
+G10:
+ text: "Temperatures in the OR will be within the allowed range (Same as G22)"
+ undeveloped: true
+ horizontalIndex: { absolute: 3 }
+
+G13:
+ text: "The winds in the OR will be within the allowed limits"
+ supportedBy: [S7]
+ horizontalIndex: { absolute: 1 }
+
+S7:
+ text: "Argue over all the types of winds in the OR"
+ supportedBy: [G7, G17, G18]
+ horizontalIndex: { absolute: 1 }
+
+G7:
+ text: "The sustained wind in the OR will be less than the maximum allowed by the airframe"
+ supportedBy: [Sn1]
+ horizontalIndex: { absolute: 1 }
+
+Sn1:
+ text: "[Sustained_Winds] < Max_Wind_Speed"
+ horizontalIndex: { absolute: 1 }
+
+G17:
+ text: "Wind gusts in the OR will be less than the maximum allowed by the airframe."
+ supportedBy: [Sn6]
+ horizontalIndex: { absolute: 2 }
+
+Sn6:
+ text: "[Wind_Gusts] < Max_Wind_Speed"
+ horizontalIndex: { absolute: 2 }
+
+G18:
+ text: "Wind shear will not be present in the OR."
+ supportedBy: [Sn10]
+ horizontalIndex: { absolute: 0 }
+
+Sn10:
+ text: "[Wind_Shear] == False"
+ horizontalIndex: { absolute: 0 }
+
+G19:
+ text: "The density altitude at launch will be less than the maximum allowed by UAS"
+ supportedBy: [Sn11]
+ horizontalIndex: { absolute: 2 }
+
+Sn11:
+ text: "[Density_Alt_at_Takeoff] < [Max_Altitude]"
+ horizontalIndex: { absolute: 2 }
+
+S6:
+ text: "Argue the pilot (or crewmember) has sufficient skill to pilot the UAS"
+ supportedBy: [G15]
+ horizontalIndex: { absolute: 1 }
+
+G15:
+ text: "Show the pilot is certified to fly"
+ supportedBy: [Sn9]
+ horizontalIndex: { absolute: 4 }
+
+Sn9:
+ text: "[Pilot_Certified]"
+ horizontalIndex: { absolute: 3 }
+
+S3:
+ text: "Argue that the causes of ground collision are mitigated."
+ supportedBy: [G11, G12]
+ horizontalIndex: { absolute: 1 }
+
+G11:
+ text: "The chances of a loss of battery event are low"
+ supportedBy: [S8]
+ horizontalIndex: { absolute: 4 }
+
+G12:
+ text: "The chance of loss of control of the UAS is low (Same as G4)"
+ undeveloped: true
+ horizontalIndex: { absolute: 3 }
+
+S8:
+ text: "Argue over the causes of loss of battery events."
+ supportedBy: [G20, G21, G22]
+ horizontalIndex: { absolute: 3 }
+
+G20:
+ text: "The battery will have sufficient reserves for the flight"
+ supportedBy: [Sn2]
+ horizontalIndex: { absolute: 9 }
+
+Sn2:
+ text: "[Current_Battery_Charge] * [Max_Hover_Time] < Mission_Estimated_Length"
+ horizontalIndex: { absolute: 8 }
+
+G21:
+ text: "The battery health will not be poor"
+ supportedBy: [Sn12]
+ horizontalIndex: { absolute: 11 }
+
+Sn12:
+ text: "[Current_Battery_Health] != 'Low_Battery_Health'"
+ horizontalIndex: { absolute: 10 }
+
+G22:
+ text: "The air temperature in the OR will be within the allowed limits for the battery"
+ supportedBy: [Sn13]
+ horizontalIndex: { absolute: 10 }
+
+Sn13:
+ text: "[Min_Operating_Temp] < [Air_Temp_at_Takeoff] < [Max_Operating_Temp]"
+ horizontalIndex: { absolute: 9 }

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/controllers/treeDataController.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/controllers/treeDataController.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>const fs = require("fs");
+const path = require("path");
+
+// Directory to check and create if missing
+const EXPORTS_DIRECTORY = path.join(__dirname, "../exports");
+
+/**
+ * Ensures that the specified directory exists. If the directory does not exist,
+ * it is created, including any necessary parent directories.
+ *
+ * @param {string} directoryPath - The path to the directory to check or create.
+ * @throws {Error} If an error occurs while creating the directory.
+ */
+const ensureDirectoryExists = (directoryPath) => {
+    if (!fs.existsSync(directoryPath)) {
+        try {
+            fs.mkdirSync(directoryPath, { recursive: true });
+            console.log(`Directory created: ${directoryPath}`);
+        } catch (error) {
+            console.error(`Error creating directory ${directoryPath}:`, error);
+            throw error;
+        }
+    }
+};
+
+// Temporary in-memory cache for the tree
+let cachedTree = null;
+let cachedPrunedTree = null;
+
+// Path to the file for persistent storage
+const SAFETY_CASE_FILE_PATH = path.join(EXPORTS_DIRECTORY, "safetyCaseData.json");
+const PRUNED_SAFETY_CASE_FILE_PATH = path.join(EXPORTS_DIRECTORY, "prunedCaseData.json");
+
+/**
+ * Saves the provided safety case tree to a file and updates the in-memory cache.
+ *
+ * @param {Object} tree - The safety case tree object to save.
+ * @throws {Error} If an error occurs while saving the tree.
+ */
+const saveSafetyCaseMarked = (tree) => {
+    try {
+        ensureDirectoryExists(EXPORTS_DIRECTORY); // Ensure directory exists
+
+        // Clear the in-memory cache
+        cachedTree = null;
+
+        // Write the tree data to the file as JSON
+        fs.writeFileSync(SAFETY_CASE_FILE_PATH, JSON.stringify(tree, null, 2), "utf-8");
+
+        // Update the in-memory cache
+        cachedTree = tree;
+
+        console.log("Tree saved successfully.");
+    } catch (error) {
+        console.error("Error saving tree:", error);
+        throw error;
+    }
+};
+
+/**
+ * Saves the provided pruned safety case tree to a file and updates the in-memory cache.
+ *
+ * @param {Object} tree - The pruned safety case tree object to save.
+ * @throws {Error} If an error occurs while saving the tree.
+ */
+const savePrunedTree = (tree) => {
+    try {
+        ensureDirectoryExists(EXPORTS_DIRECTORY); // Ensure directory exists
+
+        console.log("Trying to save pruned Tree.");
+
+        // Write the tree data to the file as JSON
+        fs.writeFileSync(PRUNED_SAFETY_CASE_FILE_PATH, JSON.stringify(tree, null, 2), "utf-8");
+
+        console.log("Pruned Tree saved successfully.");
+    } catch (error) {
+        console.error("Error saving pruned tree:", error);
+        throw error;
+    }
+};
+
+/**
+ * Retrieves the saved safety case tree from the file. If the file does not exist,
+ * returns null. Updates the in-memory cache.
+ *
+ * @returns {Object|null} The safety case tree object, or null if no data exists.
+ * @throws {Error} If an error occurs while retrieving the tree.
+ */
+const getSafetyCaseMarked = () => {
+    try {
+        ensureDirectoryExists(EXPORTS_DIRECTORY); // Ensure directory exists
+
+        // Read the tree data from the file
+        if (fs.existsSync(SAFETY_CASE_FILE_PATH)) {
+            const fileData = fs.readFileSync(SAFETY_CASE_FILE_PATH, "utf-8");
+            cachedTree = JSON.parse(fileData);
+            console.log("Safety case loaded from file.");
+            return cachedTree;
+        }
+
+        console.log("No Safety case data found.");
+        return null; // No tree data available
+    } catch (error) {
+        console.error("Error retrieving tree:", error);
+        throw error;
+    }
+};
+
+/**
+ * Retrieves the saved pruned safety case tree from the file. If the file does not exist,
+ * returns null. Updates the in-memory cache.
+ *
+ * @returns {Object|null} The pruned safety case tree object, or null if no data exists.
+ * @throws {Error} If an error occurs while retrieving the tree.
+ */
+const getPrunedSafetyCaseMarked = () => {
+    try {
+        ensureDirectoryExists(EXPORTS_DIRECTORY); // Ensure directory exists
+
+        // Read the tree data from the file
+        if (fs.existsSync(PRUNED_SAFETY_CASE_FILE_PATH)) {
+            const fileData = fs.readFileSync(PRUNED_SAFETY_CASE_FILE_PATH, "utf-8");
+            cachedPrunedTree = JSON.parse(fileData);
+            console.log("Pruned safety case loaded from file.");
+            return cachedPrunedTree;
+        }
+
+        console.log("No pruned safety case data found.");
+        return null; // No tree data available
+    } catch (error) {
+        console.error("Error retrieving pruned tree:", error);
+        throw error;
+    }
+};
+
+// Export the functions
+module.exports = {
+    saveSafetyCaseMarked,
+    getSafetyCaseMarked,
+    savePrunedTree,
+    getPrunedSafetyCaseMarked,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Response.html">Response</a></li><li><a href="module-Submission.html">Submission</a></li></ul><h3>Classes</h3><ul><li><a href="ArgData.html">ArgData</a></li><li><a href="ArgumentNode.html">ArgumentNode</a></li><li><a href="ArgumentTree.html">ArgumentTree</a></li><li><a href="Context.html">Context</a></li><li><a href="Goal.html">Goal</a></li><li><a href="InContextOf.html">InContextOf</a></li><li><a href="IsSupportedBy.html">IsSupportedBy</a></li><li><a href="QuestionNode.html">QuestionNode</a></li><li><a href="QuestionTree.html">QuestionTree</a></li><li><a href="Solution.html">Solution</a></li><li><a href="Strategy.html">Strategy</a></li></ul><h3>Global</h3><ul><li><a href="global.html#adjustLeafNodeStatus">adjustLeafNodeStatus</a></li><li><a href="global.html#applyClassesToSvg">applyClassesToSvg</a></li><li><a href="global.html#applyDescriptionsFromData">applyDescriptionsFromData</a></li><li><a href="global.html#applyFailureStatusFromData">applyFailureStatusFromData</a></li><li><a href="global.html#argTreeJSONToYaml">argTreeJSONToYaml</a></li><li><a href="global.html#argumentContent">argumentContent</a></li><li><a href="global.html#assignHorizontalIndexes">assignHorizontalIndexes</a></li><li><a href="global.html#collectNodesBFS">collectNodesBFS</a></li><li><a href="global.html#connectDB">connectDB</a></li><li><a href="global.html#cosineSimilarity">cosineSimilarity</a></li><li><a href="global.html#deleteThreshold">deleteThreshold</a></li><li><a href="global.html#ensureDirectoryExists">ensureDirectoryExists</a></li><li><a href="global.html#expandWords">expandWords</a></li><li><a href="global.html#extractVariableNames">extractVariableNames</a></li><li><a href="global.html#fileToString">fileToString</a></li><li><a href="global.html#generateArgTreeDiagram">generateArgTreeDiagram</a></li><li><a href="global.html#generateQuestions">generateQuestions</a></li><li><a href="global.html#getFileContent">getFileContent</a></li><li><a href="global.html#getLeafNodes">getLeafNodes</a></li><li><a href="global.html#getPrunedSafetyCaseMarked">getPrunedSafetyCaseMarked</a></li><li><a href="global.html#getResponses">getResponses</a></li><li><a href="global.html#getSafetyCaseMarked">getSafetyCaseMarked</a></li><li><a href="global.html#getTermFrequencyVector">getTermFrequencyVector</a></li><li><a href="global.html#getThresholds">getThresholds</a></li><li><a href="global.html#getThresholdsFor">getThresholdsFor</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#inputYamlPath">inputYamlPath</a></li><li><a href="global.html#loadResponsesFromDB">loadResponsesFromDB</a></li><li><a href="global.html#loadYamlTemplate">loadYamlTemplate</a></li><li><a href="global.html#mapResponsesToLeafNodes">mapResponsesToLeafNodes</a></li><li><a href="global.html#matchToken">matchToken</a></li><li><a href="global.html#maxDensity">maxDensity</a></li><li><a href="global.html#maxWeight">maxWeight</a></li><li><a href="global.html#maxWind">maxWind</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#nodesToDelete">nodesToDelete</a></li><li><a href="global.html#parseAndBuildArgumentTree">parseAndBuildArgumentTree</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseContext">parseContext</a></li><li><a href="global.html#parseGoal">parseGoal</a></li><li><a href="global.html#parseInContextOf">parseInContextOf</a></li><li><a href="global.html#parseIsSupportedBy">parseIsSupportedBy</a></li><li><a href="global.html#parseQuestionTree">parseQuestionTree</a></li><li><a href="global.html#parseSolution">parseSolution</a></li><li><a href="global.html#parseStrategy">parseStrategy</a></li><li><a href="global.html#parseToTree">parseToTree</a></li><li><a href="global.html#parseXMLToJS">parseXMLToJS</a></li><li><a href="global.html#preprocessString">preprocessString</a></li><li><a href="global.html#processFileContent">processFileContent</a></li><li><a href="global.html#processNode">processNode</a></li><li><a href="global.html#propagateRiskLevels">propagateRiskLevels</a></li><li><a href="global.html#prunedFlag">prunedFlag</a></li><li><a href="global.html#reachableNodes">reachableNodes</a></li><li><a href="global.html#removeUnsupportedSn">removeUnsupportedSn</a></li><li><a href="global.html#removeUnusedSnNodes">removeUnusedSnNodes</a></li><li><a href="global.html#reportWebVitals">reportWebVitals</a></li><li><a href="global.html#responseSchema">responseSchema</a></li><li><a href="global.html#router">router</a></li><li><a href="global.html#sanitizeText">sanitizeText</a></li><li><a href="global.html#savePrunedTree">savePrunedTree</a></li><li><a href="global.html#saveResponses">saveResponses</a></li><li><a href="global.html#saveSafetyCaseMarked">saveSafetyCaseMarked</a></li><li><a href="global.html#saveTreeAsSVG">saveTreeAsSVG</a></li><li><a href="global.html#setThresholdsFor">setThresholdsFor</a></li><li><a href="global.html#stemWord">stemWord</a></li><li><a href="global.html#stringToFile">stringToFile</a></li><li><a href="global.html#submissionSchema">submissionSchema</a></li><li><a href="global.html#svgFiles">svgFiles</a></li><li><a href="global.html#synonyms">synonyms</a></li><li><a href="global.html#thresholdSchema">thresholdSchema</a></li><li><a href="global.html#thresholdsModel">thresholdsModel</a></li><li><a href="global.html#timestamp">timestamp</a></li><li><a href="global.html#tokenizeFileContent">tokenizeFileContent</a></li><li><a href="global.html#transformTree">transformTree</a></li><li><a href="global.html#traverseAndBuildTree">traverseAndBuildTree</a></li><li><a href="global.html#updateYamlFileWithMongoData">updateYamlFileWithMongoData</a></li><li><a href="global.html#updateYamlWithResponses">updateYamlWithResponses</a></li><li><a href="global.html#writeUpdatedYaml">writeUpdatedYaml</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Dec 17 2024 13:37:43 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

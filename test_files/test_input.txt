@@ -1,0 +1,77 @@
+Crew_Characteristics:
+- BOOL_Pilot_Certified = True
+- BOOL_Spotter_Present = True   // Needed since we choose High_Air_Traffic below
+
+Airspace_Characteristics:
+- Wind:
+  - FLOAT_Wind_Gusts = 12              // [Wind_Gusts] < [Max_Wind_Speed] (12 < 15)
+  - FLOAT_Wind_Sustained = 5           // [Sustained_Winds] < 10 (5 < 10)
+  - BOOL_Wind_Shear = False            // [Wind_Shear] == False
+
+- Density_Altitude:
+  - INT_Max_AGL_Alt = 10000            // This will represent [Max_Altitude]
+  - INT_Alt_Above_Sea_Level_At_Takeoff_(Feet) = 0
+  - INT_Pressure_Alt_At_Takeoff_(Feet) = 0
+  - FLOAT_Air_Pressure_At_Takeoff = 29.92   // Standard pressure, value not critical here
+  - FLOAT_Air_Temp_at_Takeoff_(Celsius) = 20
+  - FLOAT_Air_Temp_at_Max_Altitude_(Celsius) = -5
+  - CALC_Density_Alt_at_Takeoff = 9000       // [Density_Alt_at_Takeoff] < [Max_Altitude] (9000 < 10000)
+
+- Precipitation:
+  - FLOAT_Rain_rate = 2               // [Rain_Rate] < 5
+  - FLOAT_Snow_sleet_rate = 0         // [Snow_Sleet_Rate] < 5
+
+- Visibility:
+  - INT_Ceiling_Dist = 300            // [Ceiling_Dist] > [Max_Mission_Altitude] (300 > 120)
+  - INT_Visibility_Dist = 1000        // [Visbility_dist] > [Cylinder_Radius] (1000 > 500)
+
+- Airspace_Info:
+  - TUPLE_Air_Traffic_in_OR = High_Air_Traffic  // Requires Spotter_Present = True
+  - BOOL_NOTAM_Info = True                     // Not directly referenced in conditions, but set True
+
+Ground_Characteristics:
+- Ground_Congestion:
+  - TUPLE_Ground_Traffic_In_OR = Low_Ground_Traffic   // Not critical to current conditions, choose low
+
+- Ground_Obstacles:
+  - FLOAT_Obstacle_Longitude = 50.123    // Arbitrary
+  - FLOAT_Obstacle_Latitude = 25.456     // Arbitrary
+  - INT_Obstacle_Height_AGL = 10         // Arbitrary
+
+Mission_Characteristics:
+- UAS_Specifications:
+  - UAS_General_Info:
+    - INT_Max_Wind_Speed = 15            // Used in [Wind_Gusts] < [Max_Wind_Speed] (12 < 15)
+    - INT_Max_Density_Alt = 20000        // Arbitrary large number for safety margin
+    - INT_Max_Takeoff_Weight = 1000      // Arbitrary
+
+  - Battery:
+    - INT_Max_Hover_Time = 40            // For E2 check: [Current_Battery_Charge]*[Max_Hover_Time]<[Mission_Estimated_Length]
+    - FLOAT_Current_Battery_Charge = 0.9 // 0.9 * 40 = 36
+    - TUPLE_Current_Battery_Health = Good_Battery_Health // [Current_Battery_Health] != "Low_Battery_Health"
+    - INT_Min_Operating_Temp = -5        // [Min_Operating_Temp] < [Air_Temp_at_Takeoff] < [Max_Operating_Temp]
+    - INT_Max_Operating_Temp = 40
+
+  - Sensors:
+    - BOOL_Obstacle_Avoidance_Sys = True // [Obstacle_Avoidance_Sys] = True
+    - BOOL_Aircraft_Avoidance_Sys = True // [Detect_and_Avoid_Sys] = True
+
+- Flight_Characteristics:
+  - Mission_Location:
+    - TUPLE_Longitude_Latitude:
+      - FLOAT_Location_Longitude = -93.65  // Arbitrary
+      - FLOAT_Location_Latitude = 42.02    // Arbitrary
+
+  - Mission_Area:
+    - INT_Cylinder_Radius = 500     // [Visibility_dist] > [Cylinder_Radius] (1000 > 500)
+
+  - INT_Max_Mission_Altitude = 120  // [Ceiling_Dist] > [Max_Mission_Altitude] (300 > 120)
+  - TUPLE_Mission_Type = Recreation // Arbitrary choice, not critical to conditions
+  - INT_Mission_Estimated_Length = 50 // [Current_Battery_Charge]*[Max_Hover_Time]<[Mission_Estimated_Length] (36<50)
+
+
+With these inputs:
+- The wind, precipitation, visibility, and air traffic conditions all meet the stated requirements.
+- The battery conditions and temperatures meet their constraints.
+- The pilot is certified, and a spotter is present when air traffic is high.
+- Required obstacle and detect-and-avoid systems are set to True.

@@ -1,0 +1,8 @@
+node_modules/
+gsn_suas/images/
+gsn_suas/output arguments/
+backend/logs/mongodb.log
+backend/data/db/WiredTiger.lock
+gsn_suas/evidences.md
+backend/exports
+backend/uploads

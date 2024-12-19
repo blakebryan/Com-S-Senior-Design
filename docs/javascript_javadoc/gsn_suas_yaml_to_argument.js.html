@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: gsn_suas/yaml_to_argument.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: gsn_suas/yaml_to_argument.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file yaml_to_argument.js
+ * Converts a YAML file containing GSN (Goal Structuring Notation) nodes into an
+ * .argument file format for structured argumentation systems.
+ * @author Brady Bargren. ISU ID: az2997
+ */
+
+const fs = require('fs');
+const yaml = require('js-yaml');
+const path = require('path'); // For managing file paths
+
+/**
+ * Get the input YAML file path and output .argument file path from command line arguments.
+ */
+const inputYamlPath = process.argv[2];
+const outputArgumentPath = process.argv[3];
+
+if (!inputYamlPath || !outputArgumentPath) {
+    console.error('Usage: node yaml_to_argument.js &lt;input_yaml_path> &lt;output_argument_path>');
+    process.exit(1);
+}
+
+let yamlContent;
+try {
+    // Read and parse the input YAML file
+    const fileContent = fs.readFileSync(inputYamlPath, 'utf8');
+    yamlContent = yaml.load(fileContent);
+} catch (err) {
+    console.error('Error reading YAML file:', err);
+    process.exit(1);
+}
+
+const elements = []; // Stores argument elements (e.g., Goals, Strategies)
+const relationships = []; // Stores relationships between elements (e.g., IsSupportedBy)
+const processedNodes = new Set(); // Tracks processed nodes to avoid duplicates
+
+/**
+ * Processes a node and collects its elements and relationships.
+ *
+ * @param {string} nodeId - The ID of the node to process.
+ */
+function processNode(nodeId) {
+    if (processedNodes.has(nodeId)) {
+        return; // Skip nodes that have already been processed
+    }
+    processedNodes.add(nodeId);
+
+    const nodeData = yamlContent[nodeId];
+    if (!nodeData) {
+        console.warn(`Node ${nodeId} not found in YAML content.`);
+        return;
+    }
+
+    const { text, supportedBy, inContextOf, undeveloped, ...otherProps } = nodeData;
+    let type;
+
+    // Determine the type of the node based on its ID prefix
+    if (nodeId.startsWith('G')) {
+        type = 'Goal';
+    } else if (nodeId.startsWith('S')) {
+        type = 'Strategy';
+    } else if (nodeId.startsWith('Sn')) {
+        type = 'Solution';
+    } else if (nodeId.startsWith('C')) {
+        type = 'Context';
+    } else if (nodeId.startsWith('A')) {
+        type = 'Assumption';
+    } else if (nodeId.startsWith('J')) {
+        type = 'Justification';
+    } else {
+        type = 'Goal'; // Default to 'Goal' if unknown
+    }
+
+    let elementText = `${type} `;
+
+    if (undeveloped) {
+        elementText += 'toBeDeveloped ';
+    }
+
+    elementText += `${nodeId} {\n`;
+
+    // Add description if available
+    if (text) {
+        elementText += `\tdescription "${text}"\n`;
+    }
+
+    // Include additional properties such as classes or horizontalIndex
+    for (const [key, value] of Object.entries(otherProps)) {
+        if (key !== 'supportedBy' &amp;&amp; key !== 'inContextOf') {
+            let valueStr = Array.isArray(value) || typeof value === 'object'
+                ? JSON.stringify(value)
+                : value;
+            elementText += `\t${key} ${valueStr}\n`;
+        }
+    }
+
+    elementText += `}`;
+    elements.push(elementText);
+
+    // Process supportedBy relationships and their child nodes
+    if (supportedBy) {
+        supportedBy.forEach(childId => {
+            const relationshipText = `IsSupportedBy ISB_${nodeId}_${childId} {\n\tto ${childId} from ${nodeId}\n}`;
+            relationships.push(relationshipText);
+            processNode(childId); // Recursively process the child node
+        });
+    }
+
+    // Process inContextOf relationships and their context nodes
+    if (inContextOf) {
+        inContextOf.forEach(contextId => {
+            const relationshipText = `InContextOf ICO_${nodeId}_${contextId} {\n\tto ${contextId} from ${nodeId}\n}`;
+            relationships.push(relationshipText);
+            processNode(contextId); // Recursively process the context node
+        });
+    }
+}
+
+// Process all nodes starting from the root
+for (const nodeId of Object.keys(yamlContent)) {
+    processNode(nodeId);
+}
+
+/**
+ * Constructs the .argument file content with elements and relationships.
+ */
+let argumentContent = 'Argument 1.3 Generated_Argument\n\n';
+
+// Add all elements to the .argument file content
+elements.forEach(element => {
+    argumentContent += `${element}\n`;
+});
+
+// Add all relationships to the .argument file content
+relationships.forEach(relationship => {
+    argumentContent += `${relationship}\n`;
+});
+
+// Ensure the output directory exists
+const outputDir = path.dirname(outputArgumentPath);
+if (!fs.existsSync(outputDir)) {
+    fs.mkdirSync(outputDir, { recursive: true });
+}
+
+try {
+    // Write the constructed .argument file content to the output path
+    fs.writeFileSync(outputArgumentPath, argumentContent, 'utf8');
+    console.log(`Argument file successfully generated at ${outputArgumentPath}`);
+} catch (err) {
+    console.error('Error writing argument file:', err);
+    process.exit(1);
+}
+
+module.exports = {
+    processNode,
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Response.html">Response</a></li><li><a href="module-Submission.html">Submission</a></li></ul><h3>Classes</h3><ul><li><a href="ArgData.html">ArgData</a></li><li><a href="ArgumentNode.html">ArgumentNode</a></li><li><a href="ArgumentTree.html">ArgumentTree</a></li><li><a href="Context.html">Context</a></li><li><a href="Goal.html">Goal</a></li><li><a href="InContextOf.html">InContextOf</a></li><li><a href="IsSupportedBy.html">IsSupportedBy</a></li><li><a href="QuestionNode.html">QuestionNode</a></li><li><a href="QuestionTree.html">QuestionTree</a></li><li><a href="Solution.html">Solution</a></li><li><a href="Strategy.html">Strategy</a></li></ul><h3>Global</h3><ul><li><a href="global.html#adjustLeafNodeStatus">adjustLeafNodeStatus</a></li><li><a href="global.html#applyClassesToSvg">applyClassesToSvg</a></li><li><a href="global.html#applyDescriptionsFromData">applyDescriptionsFromData</a></li><li><a href="global.html#applyFailureStatusFromData">applyFailureStatusFromData</a></li><li><a href="global.html#argTreeJSONToYaml">argTreeJSONToYaml</a></li><li><a href="global.html#argumentContent">argumentContent</a></li><li><a href="global.html#assignHorizontalIndexes">assignHorizontalIndexes</a></li><li><a href="global.html#collectNodesBFS">collectNodesBFS</a></li><li><a href="global.html#connectDB">connectDB</a></li><li><a href="global.html#cosineSimilarity">cosineSimilarity</a></li><li><a href="global.html#deleteThreshold">deleteThreshold</a></li><li><a href="global.html#ensureDirectoryExists">ensureDirectoryExists</a></li><li><a href="global.html#expandWords">expandWords</a></li><li><a href="global.html#extractVariableNames">extractVariableNames</a></li><li><a href="global.html#fileToString">fileToString</a></li><li><a href="global.html#generateArgTreeDiagram">generateArgTreeDiagram</a></li><li><a href="global.html#generateQuestions">generateQuestions</a></li><li><a href="global.html#getFileContent">getFileContent</a></li><li><a href="global.html#getLeafNodes">getLeafNodes</a></li><li><a href="global.html#getPrunedSafetyCaseMarked">getPrunedSafetyCaseMarked</a></li><li><a href="global.html#getResponses">getResponses</a></li><li><a href="global.html#getSafetyCaseMarked">getSafetyCaseMarked</a></li><li><a href="global.html#getTermFrequencyVector">getTermFrequencyVector</a></li><li><a href="global.html#getThresholds">getThresholds</a></li><li><a href="global.html#getThresholdsFor">getThresholdsFor</a></li><li><a href="global.html#handleError">handleError</a></li><li><a href="global.html#inputYamlPath">inputYamlPath</a></li><li><a href="global.html#loadResponsesFromDB">loadResponsesFromDB</a></li><li><a href="global.html#loadYamlTemplate">loadYamlTemplate</a></li><li><a href="global.html#mapResponsesToLeafNodes">mapResponsesToLeafNodes</a></li><li><a href="global.html#matchToken">matchToken</a></li><li><a href="global.html#maxDensity">maxDensity</a></li><li><a href="global.html#maxWeight">maxWeight</a></li><li><a href="global.html#maxWind">maxWind</a></li><li><a href="global.html#model">model</a></li><li><a href="global.html#nodesToDelete">nodesToDelete</a></li><li><a href="global.html#parseAndBuildArgumentTree">parseAndBuildArgumentTree</a></li><li><a href="global.html#parseCSV">parseCSV</a></li><li><a href="global.html#parseContext">parseContext</a></li><li><a href="global.html#parseGoal">parseGoal</a></li><li><a href="global.html#parseInContextOf">parseInContextOf</a></li><li><a href="global.html#parseIsSupportedBy">parseIsSupportedBy</a></li><li><a href="global.html#parseQuestionTree">parseQuestionTree</a></li><li><a href="global.html#parseSolution">parseSolution</a></li><li><a href="global.html#parseStrategy">parseStrategy</a></li><li><a href="global.html#parseToTree">parseToTree</a></li><li><a href="global.html#parseXMLToJS">parseXMLToJS</a></li><li><a href="global.html#preprocessString">preprocessString</a></li><li><a href="global.html#processFileContent">processFileContent</a></li><li><a href="global.html#processNode">processNode</a></li><li><a href="global.html#propagateRiskLevels">propagateRiskLevels</a></li><li><a href="global.html#prunedFlag">prunedFlag</a></li><li><a href="global.html#reachableNodes">reachableNodes</a></li><li><a href="global.html#removeUnsupportedSn">removeUnsupportedSn</a></li><li><a href="global.html#removeUnusedSnNodes">removeUnusedSnNodes</a></li><li><a href="global.html#reportWebVitals">reportWebVitals</a></li><li><a href="global.html#responseSchema">responseSchema</a></li><li><a href="global.html#router">router</a></li><li><a href="global.html#sanitizeText">sanitizeText</a></li><li><a href="global.html#savePrunedTree">savePrunedTree</a></li><li><a href="global.html#saveResponses">saveResponses</a></li><li><a href="global.html#saveSafetyCaseMarked">saveSafetyCaseMarked</a></li><li><a href="global.html#saveTreeAsSVG">saveTreeAsSVG</a></li><li><a href="global.html#setThresholdsFor">setThresholdsFor</a></li><li><a href="global.html#stemWord">stemWord</a></li><li><a href="global.html#stringToFile">stringToFile</a></li><li><a href="global.html#submissionSchema">submissionSchema</a></li><li><a href="global.html#svgFiles">svgFiles</a></li><li><a href="global.html#synonyms">synonyms</a></li><li><a href="global.html#thresholdSchema">thresholdSchema</a></li><li><a href="global.html#thresholdsModel">thresholdsModel</a></li><li><a href="global.html#timestamp">timestamp</a></li><li><a href="global.html#tokenizeFileContent">tokenizeFileContent</a></li><li><a href="global.html#transformTree">transformTree</a></li><li><a href="global.html#traverseAndBuildTree">traverseAndBuildTree</a></li><li><a href="global.html#updateYamlFileWithMongoData">updateYamlFileWithMongoData</a></li><li><a href="global.html#updateYamlWithResponses">updateYamlWithResponses</a></li><li><a href="global.html#writeUpdatedYaml">writeUpdatedYaml</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Tue Dec 17 2024 13:37:43 GMT-0600 (Central Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

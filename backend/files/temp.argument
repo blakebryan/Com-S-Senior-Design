@@ -1,0 +1,29 @@
+Argument 1.3 Mini_SC_Sample_Argument
+
+Goal G1 {
+	description "Complete a safe flight in controlled airspace"
+}
+Strategy S1 {
+	description "All flight hazards are mitigated"
+}
+Goal G2 {
+	description "Mid-air collision risk is mitigated"
+}
+Solution E1 {
+	description "[wind_speed] < [max_wind_speed]"
+}
+Context C1 {
+	description "In the context of regulated airspace requirements"
+}
+IsSupportedBy ISB1 {
+	to S1 from G1
+}
+IsSupportedBy ISB2 {
+	to G2 from S1
+}
+IsSupportedBy ISB3 {
+	to E1 from G2
+}
+InContextOf ICO1 {
+	to C1 from G1
+}

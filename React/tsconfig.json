@@ -1,0 +1,42 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions":true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react",
+  },
+  "include": [
+    "src",
+  ],
+  "typedocOptions": {
+    "entryPoints": [
+      "src/components/D3/SafetyCaseTree.tsx",
+      "src/components/downloadButton/DownloadButton.tsx",
+      "src/components/header/Header.tsx",
+      "src/components/notams/notamsContainer.tsx",
+      "src/components/pageContainer/pageContainer.tsx",
+      "src/components/surveyCategory/Category.tsx",
+      "src/components/surveyCategory/surveyQuestion/Question.tsx",
+      "src/routes/admin/admin.tsx",
+      "src/routes/notams/notams.tsx",
+      "src/routes/survey/Survey.tsx",
+      "src/routes/survey_results/SurveyResults.tsx"
+    ],
+    "out": "../docs/typescript_javadoc"
+  }
+}
